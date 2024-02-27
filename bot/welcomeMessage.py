@@ -24,6 +24,6 @@ def generate_welcome_image(profile_image, server_name, member_name):
 
     background.text((960,750), f"{member_name}", color='white', font=poppins_small, align='center')
 
-    file = File(fp=background.image_bytes, filename='road.jpg')
+    #file = File(fp=background.image_bytes, filename='road.jpg')
     print("file generated")
-    return file
+    return File(fp=background.image_bytes, filename='road.jpg')
