@@ -10,9 +10,13 @@ import ffmpeg
 from random import randrange, randint
 from easy_pil import Editor, load_image_async, Font
 
+def get_discord_token():
+    with open('token.txt', 'r') as file:
+        return file.read().strip()
+
 def run_discord_bot():
     load_dotenv()
-    DISCORD_TOKEN = 'TOKEN'
+    DISCORD_TOKEN = get_discord_token()
     
     intents = discord.Intents.default()
     intents.message_content = True
