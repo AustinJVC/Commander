@@ -4,9 +4,6 @@ from discord.ext import commands, tasks
 import os
 import requests
 from dotenv import load_dotenv
-import youtube_dl
-import asyncio
-import ffmpeg
 from random import randrange, randint
 from easy_pil import Editor, load_image_async, Font
 
