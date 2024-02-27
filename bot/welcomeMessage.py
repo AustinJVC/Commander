@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 from random import randrange
 from easy_pil import Editor, load_image_async, Font
 
-def generate_welcome_image(avatar_url, server_name, member_name):
+def generate_welcome_image(profile_image, server_name, member_name):
     background_image = ["road.jpg", "sky.jpg", "skyline.jpg"]
     background_number = randrange(3)
     background = Editor("res/welcomeMessages/" + background_image[background_number])
-    profile_image = load_image_async(avatar_url)
+    
 
     profile = Editor(profile_image).resize((300, 300)).circle_image()
 
