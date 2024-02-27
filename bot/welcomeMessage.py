@@ -28,7 +28,7 @@ def generate_welcome_image(profile_image, server_name, member_name):
      # Save the image to a BytesIO object
     image_bytes_io = io.BytesIO()
     print("Set image bytes io")
-    background.save(image_bytes_io)
+    background.save(image_bytes_io, format="JPEG")
     print("saved image bytes io")
     image_bytes_io.seek(0)
     print("seeking image")
