@@ -160,7 +160,7 @@ def run_discord_bot():
             response = requests.get(URL).json()
             await message.channel.send(response['activity'])
 
-        elif user_message.startswith("!bored"):
+        elif user_message.startswith("!joke"):
             URL = "https://v2.jokeapi.dev/joke/Dark?type=single"
             response = requests.get(URL).json()
             await message.channel.send(response['joke'])
