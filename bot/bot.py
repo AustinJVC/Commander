@@ -31,13 +31,29 @@ def run_discord_bot():
     @bot.event
     async def on_member_join(member):
         channel = member.guild.system_channel
+        background_image = ["road.jpg", "sky.jpg", "skyline.jpg"]
+        background_number = randrange(3)
+        background = Editor("res/welcomeMessages/" + background_image[background_number])
         profile_image = await load_image_async(str(member.avatar.url))
+
+        profile = Editor(profile_image).resize((300, 300)).circle_image()
+
+        poppins = Font.poppins(size=100, variant='bold')
+
+        poppins_small = Font.poppins(size=60, variant='light')
+
+        background.paste(profile, (800, 200))
+        background.ellipse((800, 200), 300, 300, outline='white', stroke_width=5)
+
+        background.text((960, 600), f"Welcome to {member.guild.name}", color='white', font=poppins, align='center')
+
+        background.text((960,750), f"{member.name}", color='white', font=poppins_small, align='center')
+
+        file = File(fp=background.image_bytes, filename='road.jpg')
+        print("file is file")
+        print("sending file")
         await channel.send(f"{member.mention}")
-        print(member.avatar.url)
-        print(member.name)
-        print(member.guild.name)
-        print("has been sent to function")
-        await channel.send(File(welcomeMessage.generate_welcome_image(profile_image, member.name, member.guild.name)))
+        await channel.send(file=file)
 
     @bot.event
     async def on_message(message):
