@@ -23,10 +23,76 @@ def run_discord_bot():
     intents.members = True
     bot = commands.Bot(command_prefix='!', intents=intents)
 
+    youtube_dl.utils.bug_reports_message = lambda: ''
+    ytdl_format_options = {
+        'format': 'bestaudio/best',
+        'restrictfilenames': True,
+        'noplaylist': True,
+        'nocheckcertificate': True,
+        'ignoreerrors': False,
+        'logtostderr': False,
+        'quiet': True,
+        'no_warnings': True,
+        'default_search': 'auto',
+        'source_address': '0.0.0.0',  # binded to ipv4
+        'outtmpl': 'res/audio/%(title)s.%(ext)s'
+    }
+    ffmpeg_options = {
+        'options': '-vn'
+    }
+    ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+    
+    class YTDLSource(discord.PCMVolumeTransformer):
+        def __init__(self, source, *, data, volume=0.5):
+            super().__init__(source, volume)
+            self.data = data
+            self.title = data.get('title')
+            self.url = ""
+
+        @classmethod
+        async def from_url(cls, url, *, loop=None, stream=False):
+            loop = loop or asyncio.get_event_loop()
+            try:
+                data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+                if 'entries' in data:
+                    # take first item from a playlist
+                    data = data['entries'][0]
+                filename = data['title'] if stream else ytdl.prepare_filename(data)
+                return filename
+            except Exception as e:
+                print(e)
+                return None
     @bot.tree.command(name="test")
     async def hello(interaction: discord.Interaction):
         await interaction.response.send_message(f"The test has been completed with `0` errors.")
 
+    @bot.command(name='play')
+    async def play_song(ctx, *, url):
+        url = ctx.message.content.split(' ')[1]
+        try:
+            if ctx.author.voice:
+                # Existing code...
+                async with ctx.typing():
+                    await ctx.send("**Fetching audio:** This may take a moment!")
+                    filename = await YTDLSource.from_url(url, loop=bot.loop)
+                    if filename is not None:
+                        print("Playing executable")
+                        voice_client.play(discord.FFmpegPCMAudio(executable="D:\PATH_Programs/ffmpeg", source=filename))
+                        print("Executable playing")
+                        title = filename.split('\\')
+                        title = str(title[2]).lower()
+                        title = title.replace('_', ' ').split('.m4')
+                        title = title[0].split('.web')
+                        title = str(title[0]).title()
+                        await ctx.send(f'**Now playing:** {title}')
+                    else:
+                        await ctx.send("Failed to fetch audio.")
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+        except Exception as e:
+            print("Error occurred:", e)
+            traceback.print_exc()  # Print the full traceback
+            await ctx.send("An error occurred while trying to play the song.")
     @bot.event
     async def on_ready():
         print(f'{bot.user} is now running!')
@@ -69,6 +135,77 @@ def run_discord_bot():
 
         print(f"{username} said: [{message.content}]' in: {channel}")
 
+        if user_message == '!join':
+            if not message.author.voice:
+                
+                embed=discord.Embed(title="You’re kidding, right? You never show up. You aren't even there right now.", description="Join a server voice, then ask me again.", color=0xee00ff)
+                embed.set_author(name="Join?")
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1117363244282159114/1117363306705981591/enter.jpg")
+                
+                await message.channel.send(embed=embed)
+
+            else:
+                channel = message.author.voice.channel
+                await channel.connect()
+       
+        if user_message.startswith("!play"):
+            url = user_message.split(' ')[1]
+            
+            # Create a dummy Context object
+            print("Creating content")
+            content = f"!play {url}"
+            print("Content created")
+            dummy_message = message
+            print("Dummy message created")
+            dummy_message.content = content
+            print("Dummy message content created")
+
+            print("Invoking bot.process_commands")
+            await bot.process_commands(dummy_message)  # Invoke the command through the bot
+
+
+        if user_message == '!pause':
+            voice_client = message.guild.voice_client
+            if voice_client.is_playing():
+                await voice_client.pause()
+            else:   
+                embed=discord.Embed(title="I’m already paused. Do you want me to freeze too?", description="But you can unpause me with !resume", color=0xee00ff)
+                embed.set_author(name="Pause?")
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1117363244282159114/1117363307406430290/pause.jpg")
+                await message.channel.send(embed=embed)
+
+        if user_message == '!resume':
+            voice_client = message.guild.voice_client
+            if voice_client.is_paused():
+                await voice_client.resume()
+            else:
+                embed=discord.Embed(title="Resume what? Are you hallucinating?", description="I either don't have anything to resume, or I'm currently playing something for you.", color=0xee00ff)
+                embed.set_author(name="Resume?")
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1117363244282159114/1117363307712622642/play.jpg")
+                await message.channel.send(embed=embed)
+
+        if user_message == '!leave':
+            voice_client = message.guild.voice_client
+            if voice_client.is_connected():
+                await voice_client.disconnect()
+            else:
+                embed=discord.Embed(title="I’m already gone. You can’t hurt me anymore.", description="I'm not there! If you want me to join do !join", color=0xee00ff)
+                embed.set_author(name="Leave?")
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1117363244282159114/1117363307104452648/exit.jpg")
+                await message.channel.send(embed=embed)
+
+        if user_message == '!stop':
+            voice_client = message.guild.voice_client
+            if voice_client.is_playing():
+                await voice_client.stop()
+                
+            else:
+                embed=discord.Embed(title="There is no music. Only silence. And pain.", description="I can't stop the music since I have nothing playing. If you'd like to play something, add it with !play {url}", color=0xee00ff)
+                embed.set_author(name="Stop?")
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1117363244282159114/1117363308043976874/stop.jpg")
+                await message.channel.send(embed=embed)
+       
+       
         if user_message == "!cocktails":
 
             URL = "https://www.thecocktaildb.com/api/json/v1/1/random.php"
@@ -119,7 +256,19 @@ def run_discord_bot():
             await message.channel.send(embed=embed)
             await bot.process_commands(message)
 
-        elif user_message.startswith('!weather '):
+        if user_message == '!musichelp':
+                
+            embed=discord.Embed(title="Need help with Commander Music Bot? Here is a list of the most useful commands!", color=0xee00ff)
+            embed.set_author(name="Help!")
+            embed.add_field(name="!play {URL}", value="Plays a specified video from YouTube, and takes it's URL as a parameter.", inline=True)
+            embed.add_field(name="!join", value="Commander will join the voice channel of which the author is currently in.", inline=True)
+            embed.add_field(name="!leave", value="Commander leaves the voice channel he is currently occupying.", inline=True)
+            embed.add_field(name="!pause", value="Pauses the current song, making it easy to come back to later on.", inline=True)
+            embed.add_field(name="!resume", value="Resumes the current song ", inline=True)
+            embed.add_field(name="!stop", value="Turns off the music, but Commander will remain in the channel.", inline=True)
+            await message.channel.send(embed=embed)
+
+        if user_message.startswith('!weather '):
             city = user_message.split(' ')
             city = city[1]
             key = '86cbf0be7a3752741f43640e6b06ea79'
@@ -139,28 +288,28 @@ def run_discord_bot():
             embed.add_field(name="*Low*", value=f"<:arrow_down:1117701037361475664> {low}°C", inline=True)
             await message.channel.send(embed=embed)
 
-        elif user_message.startswith("!8ball"):
+        if user_message.startswith("!8ball"):
             URL = "https://eightballapi.com/api?question=+&lucky=false"
             response = requests.get(URL).json()
             await message.channel.send(response['reading'])
         
-        elif user_message.startswith("!roll"):
+        if user_message.startswith("!roll"):
             await message.channel.send("You rolled a " + str(randint(1,6)) + "!")
         
-        elif user_message.startswith("!help"):
+        if user_message.startswith("!help"):
             await message.channel.send("no")
 
-        elif user_message.startswith("!meme"):
+        if user_message.startswith("!meme"):
             URL = "https://meme-api.com/gimme"
             response = requests.get(URL).json()
             await message.channel.send(response['url'])
 
-        elif user_message.startswith("!bored"):
+        if user_message.startswith("!bored"):
             URL = "https://www.boredapi.com/api/activity/"
             response = requests.get(URL).json()
             await message.channel.send(response['activity'])
 
-        elif user_message.startswith("!bored"):
+        if user_message.startswith("!bored"):
             URL = "https://v2.jokeapi.dev/joke/Dark?type=single"
             response = requests.get(URL).json()
             await message.channel.send(response['joke'])
