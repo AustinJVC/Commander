@@ -4,6 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from random import randrange
 from easy_pil import Editor, load_image_async, Font
+import io
 
 def generate_welcome_image(profile_image, server_name, member_name):
     background_image = ["road.jpg", "sky.jpg", "skyline.jpg"]
@@ -24,6 +25,9 @@ def generate_welcome_image(profile_image, server_name, member_name):
 
     background.text((960,750), f"{member_name}", color='white', font=poppins_small, align='center')
 
-    #file = File(fp=background.image_bytes, filename='road.jpg')
-    print("file generated")
-    return File(fp=background.image_bytes, filename='road.jpg')
+     # Save the image to a BytesIO object
+    image_bytes_io = io.BytesIO()
+    background.save(image_bytes_io, format='PNG')
+    image_bytes_io.seek(0)
+
+    return image_bytes_io.getvalue() 
