@@ -33,7 +33,7 @@ def run_discord_bot():
         channel = member.guild.system_channel
         profile_image = await load_image_async(str(member.avatar.url))
         await channel.send(f"{member.mention}")
-        await channel.send(welcomeMessage.generate_welcome_image(profile_image, member.name, member.guild.name))
+        await channel.send(File(welcomeMessage.generate_welcome_image(profile_image, member.name, member.guild.name)))
 
     @bot.event
     async def on_message(message):
