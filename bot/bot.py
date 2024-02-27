@@ -1,6 +1,5 @@
 import discord
 import requests
-import welcomeMessage
 from discord import File
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -20,10 +19,6 @@ def run_discord_bot():
     intents.members = True
     bot = commands.Bot(command_prefix='!', intents=intents)
 
-    @bot.tree.command(name="test")
-    async def hello(interaction: discord.Interaction):
-        await interaction.response.send_message(f"The test has been completed with `0` errors.")
-
     @bot.event
     async def on_ready():
         print(f'{bot.user} is now running!')
@@ -34,24 +29,20 @@ def run_discord_bot():
         background_image = ["road.jpg", "sky.jpg", "skyline.jpg"]
         background_number = randrange(3)
         background = Editor("res/welcomeMessages/" + background_image[background_number])
+        
         profile_image = await load_image_async(str(member.avatar.url))
-
         profile = Editor(profile_image).resize((300, 300)).circle_image()
 
         poppins = Font.poppins(size=100, variant='bold')
-
         poppins_small = Font.poppins(size=60, variant='light')
 
         background.paste(profile, (800, 200))
         background.ellipse((800, 200), 300, 300, outline='white', stroke_width=5)
-
         background.text((960, 600), f"Welcome to {member.guild.name}", color='white', font=poppins, align='center')
-
         background.text((960,750), f"{member.name}", color='white', font=poppins_small, align='center')
 
         file = File(fp=background.image_bytes, filename='road.jpg')
-        print("file is file")
-        print("sending file")
+
         await channel.send(f"{member.mention}")
         await channel.send(file=file)
 
@@ -134,6 +125,7 @@ def run_discord_bot():
             embed.set_author(name="Weather")
             embed.add_field(name="*High*", value=f"<:arrow_up:1117699590750224504> {high}°C", inline=False)
             embed.add_field(name="*Low*", value=f"<:arrow_down:1117701037361475664> {low}°C", inline=True)
+            await channel.send(f"{username.mention}")
             await message.channel.send(embed=embed)
 
         elif user_message.startswith("!8ball"):
@@ -145,7 +137,7 @@ def run_discord_bot():
             await message.channel.send("You rolled a " + str(randint(1,6)) + "!")
         
         elif user_message.startswith("!help"):
-            await message.channel.send("no")
+            await message.channel.send(f"{username.mention} no")
 
         elif user_message.startswith("!meme"):
             URL = "https://meme-api.com/gimme"
@@ -155,11 +147,11 @@ def run_discord_bot():
         elif user_message.startswith("!bored"):
             URL = "https://www.boredapi.com/api/activity/"
             response = requests.get(URL).json()
-            await message.channel.send(response['activity'])
+            await message.channel.send(f"{username.mention}, {response['activity']}")
 
         elif user_message.startswith("!joke"):
             URL = "https://v2.jokeapi.dev/joke/Dark?type=single"
             response = requests.get(URL).json()
-            await message.channel.send(response['joke'])
+            await message.channel.send(f"{username.mention}, {response['joke']}")
 
     bot.run(DISCORD_TOKEN)
