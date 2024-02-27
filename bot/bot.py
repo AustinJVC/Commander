@@ -51,6 +51,7 @@ def run_discord_bot():
         if message.author == bot.user:
             return
 
+        mention = message.author.mention
         username = str(message.author)
         user_message = str(message.content)
         channel = str(message.channel)
@@ -125,7 +126,7 @@ def run_discord_bot():
             embed.set_author(name="Weather")
             embed.add_field(name="*High*", value=f"<:arrow_up:1117699590750224504> {high}°C", inline=False)
             embed.add_field(name="*Low*", value=f"<:arrow_down:1117701037361475664> {low}°C", inline=True)
-            await channel.send(f"{username.mention}")
+            await channel.send(f"{mention}")
             await message.channel.send(embed=embed)
 
         elif user_message.startswith("!8ball"):
@@ -137,7 +138,7 @@ def run_discord_bot():
             await message.channel.send("You rolled a " + str(randint(1,6)) + "!")
         
         elif user_message.startswith("!help"):
-            await message.channel.send(f"{username.mention} no")
+            await message.channel.send(f"{mention} no")
 
         elif user_message.startswith("!meme"):
             URL = "https://meme-api.com/gimme"
@@ -147,11 +148,11 @@ def run_discord_bot():
         elif user_message.startswith("!bored"):
             URL = "https://www.boredapi.com/api/activity/"
             response = requests.get(URL).json()
-            await message.channel.send(f"{username.mention}, {response['activity']}")
+            await message.channel.send(f"{mention}, {response['activity']}")
 
         elif user_message.startswith("!joke"):
             URL = "https://v2.jokeapi.dev/joke/Dark?type=single"
             response = requests.get(URL).json()
-            await message.channel.send(f"{username.mention}, {response['joke']}")
+            await message.channel.send(f"{mention}, {response['joke']}")
 
     bot.run(DISCORD_TOKEN)
