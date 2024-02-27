@@ -1,5 +1,7 @@
 discord.py
+ffmpeg
 python-dotenv
 Requests
+youtube_dl
 easy_pil
 PyNaCl
