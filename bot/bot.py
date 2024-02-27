@@ -11,7 +11,7 @@ from random import randrange, randint
 from easy_pil import Editor, load_image_async, Font
 
 def get_discord_token():
-    with open('token.txt', 'r') as file:
+    with open('bot/token.txt', 'r') as file:
         return file.read().strip()
 
 def run_discord_bot():
