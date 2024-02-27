@@ -126,7 +126,7 @@ def run_discord_bot():
             embed.set_author(name="Weather")
             embed.add_field(name="*High*", value=f"<:arrow_up:1117699590750224504> {high}°C", inline=False)
             embed.add_field(name="*Low*", value=f"<:arrow_down:1117701037361475664> {low}°C", inline=True)
-            await channel.send(f"{mention}")
+            await message.channel.send(f"{mention}")
             await message.channel.send(embed=embed)
 
         elif user_message.startswith("!8ball"):
