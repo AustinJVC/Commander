@@ -5,7 +5,7 @@ Commander is a Discord bot created as a personal project during the summer of 20
 
 While Commander currently offers features such as music playback, welcome image generation, and various entertainment functionalities, it's important to note that it's still in its very early stages. Please expect potential bugs and limitations as development progresses.    
 
-I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through the email.    
+I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through email.    
 
 ## Features:
 
