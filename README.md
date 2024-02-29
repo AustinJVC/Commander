@@ -97,9 +97,9 @@ discord.py
 python-dotenv  
 Requests  
 easy_pil  
-PyNaCl
-youtube-dl (Dedicated host only)
-ffmpeg (Dedicated host only)
+PyNaCl  
+youtube-dl (Dedicated host only)  
+ffmpeg (Dedicated host only)  
 
 ### APIs:
 [Cocktails](https://thecocktaildb.com)  
