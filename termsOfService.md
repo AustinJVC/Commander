@@ -12,8 +12,7 @@ By using the Bot, you represent and warrant that:
 - You have the legal capacity to enter into a binding agreement.  
 - You will comply with all applicable laws and regulations.  
 - You will not use the Bot for any illegal or unauthorized purpose.  
-- You will not use the Bot in a manner that disrupts or interferes with the
-- Discord platform or other users.
+- You will not use the Bot in a manner that disrupts or interferes with the Discord platform or other users.
 
 ## 3. Functionality and Availability
 

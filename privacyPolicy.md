@@ -36,7 +36,7 @@ You can control your privacy settings on Discord to manage what information the 
 
 ## 7. Security
 
-We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no internet transmission or electronic storage is completely secure, so we cannot guarantee the security of your information.
+We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no internet transmission or electronic storage is completely secure. We cannot guarantee the security of your information.
 
 ## 8. Children's Privacy
 
