@@ -151,7 +151,7 @@ def run_discord_bot():
             await message.channel.send(f"{mention}, {response['activity']}")
 
         elif user_message.startswith("!joke"):
-            URL = "https://v2.jokeapi.dev/joke/Dark?type=single"
+            URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=political&type=single"
             response = requests.get(URL).json()
             await message.channel.send(f"{mention}, {response['joke']}")
 
