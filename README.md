@@ -98,7 +98,6 @@ Python
 
 ### Libraries Used:
 discord.py  
-python-dotenv  
 Requests  
 easy_pil  
 PyNaCl  
