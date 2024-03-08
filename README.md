@@ -36,7 +36,7 @@ Commander automatically creates and sends a personalized welcome image to the #a
 - User's profile picture for a friendly touch.
 - Username to make them feel acknowledged.
 - Server name to let them know they're in the right place.
-- Unique background from a selection you can customize!
+- Unique background from a selection you can customize/
 
 **Customizing welcome images:**
 
@@ -51,7 +51,7 @@ Sends a popular meme from Reddit.
 
 Makes an [API](https://meme-api.com/) request, and sends the image url back to the user.  
 
-!meme
+/meme
 
 
 #### Cocktails
@@ -59,7 +59,7 @@ Makes an [API](https://meme-api.com/) request, and sends the image url back to t
 Recommends a random cocktail to the user. Provides ingredients, photos, and instructions on how to make the drink.  
 Makes an [API](https://thecocktaildb.com) request. Formats the information received as a discord embed, and sends the embed back to the user.
 
-!cocktails 
+/cocktails 
 
 #### Weather
 
@@ -67,7 +67,7 @@ Makes an [API](https://thecocktaildb.com) request. Formats the information recei
 Displays the current temperature of the requested city to the user. Provides daily high, daily low, current temperature, and the flag of the country the city resides.  
 Makes an [API](https://openweathermap.org) request for weather, and another API(https://flagsapi.com) request for the flag of the region. Formats the information received as a discord embed, and sends the embed back to the user.
 
-!weather [CITY] 
+/weather [CITY] 
 
 #### 8Ball
 
@@ -75,21 +75,21 @@ Makes an [API](https://openweathermap.org) request for weather, and another API(
 Guides the user on how to make the right choices in life.  
 Makes an [API](https://eightballapi.com) request for guidance on the topic. Sends the response back to the user as a plain text message.
 
-!8ball [TOPIC] 
+/eightBall [TOPIC] 
 
 #### Bored
 
 Gives the user a recommended activity to cure their boredom.  
 Makes an [API](https://www.boredapi.com) request for an activity. Sends the response back to the user as a plain text message.
 
-!bored
+/bored
 
 #### Joke
 
 Gives the user a joke.  
 Makes an [API](https://v2.jokeapi.dev/) request for a joke. Sends the response back to the user as a plain text message. Please note, that these jokes are hard-coded to be dark. This can be fixed by modifying the API request link.
 
-!joke  
+/joke  
 
 ## Technical Details:
 

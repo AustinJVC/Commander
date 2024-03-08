@@ -1,158 +1,164 @@
+#External Imports
 import discord
-import requests
-from discord import File
+from discord import app_commands
 from discord.ext import commands
-from dotenv import load_dotenv
-from random import randrange, randint
-from easy_pil import Editor, load_image_async, Font
+
+#Local imports
+import cocktailEmbed
+import weatherEmbed
+import welcomeImage
+from eightBallReading import reading
+import rollDice
+import fetchMeme
+import giveActivity
+import fetchJoke
+
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+tree = bot.tree
 
 def get_discord_token():
     with open('bot/token.txt', 'r') as file:
         return file.read().strip()
 
-def run_discord_bot():
-    load_dotenv()
-    DISCORD_TOKEN = get_discord_token()
-    
-    intents = discord.Intents.default()
-    intents.message_content = True
-    intents.members = True
-    bot = commands.Bot(command_prefix='!', intents=intents)
+@bot.event
+async def on_ready():
+    """
+        Print to console bot has gone online, then sync commands with the Discord API
+    """
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
+    await bot.tree.sync()  # Sync commands to API
 
-    @bot.event
-    async def on_ready():
-        print(f'{bot.user} is now running!')
+@bot.event
+async def on_member_join(member):
+    """
+        Calls welcomeImage to generate a welcome image with the users avatar, username, and server name.
 
-    @bot.event
-    async def on_member_join(member):
-        channel = member.guild.system_channel
-        background_image = ["road.jpg", "sky.jpg", "skyline.jpg"]
-        background_number = randrange(3)
-        background = Editor("res/welcomeMessages/" + background_image[background_number])
-        
-        profile_image = await load_image_async(str(member.avatar.url))
-        profile = Editor(profile_image).resize((300, 300)).circle_image()
+    Args:
+        member (member): Member who has joined the server.
+    """
+    channel = member.guild.system_channel
+    print(f"ATTEMPTING IMAGE: \n IMG:{member.avatar.url} \n NAME:{member.name}\n SERVER_NAME:{member.guild.name}") #Prints status to console with users avatar, username, and server name
+    file = await welcomeImage.generate_image(member.avatar.url, member.name, member.guild.name) #Calls image generator to create the image.
+    await channel.send(f"{member.mention}") #Sends a message mentioning the user.
+    await channel.send(file=file) #Sends the welcome image as a file.
 
-        poppins = Font.poppins(size=100, variant='bold')
-        poppins_small = Font.poppins(size=60, variant='light')
+@bot.tree.command(name="echo", description="Echoes a message.")
+@app_commands.describe(message="The message to echo.")
+async def echo(inter: discord.Interaction, message: str) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: echo\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Echos the users message back to them.
 
-        background.paste(profile, (800, 200))
-        background.ellipse((800, 200), 300, 300, outline='white', stroke_width=5)
-        background.text((960, 600), f"Welcome to {member.guild.name}", color='white', font=poppins, align='center')
-        background.text((960,750), f"{member.name}", color='white', font=poppins_small, align='center')
+    Args:
+        interaction (discord.Interaction): Discord interaction.
+        message (str): Message to be echoed back.
+    """
+    await inter.response.send_message(message)
 
-        file = File(fp=background.image_bytes, filename='road.jpg')
+@bot.tree.command(name="weather", description="Get the weather for the specified city.")
+@app_commands.describe(city="City")
+async def weather(inter: discord.Interaction, city: str) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: weather\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the current, high, and low temperatures for the requested city.
 
-        await channel.send(f"{member.mention}")
-        await channel.send(file=file)
+    Args:
+        interaction (discord.Interaction): Discord interaction.
+        city (str): City for the requested weather.
+    """
+    await inter.response.send_message(embed=weatherEmbed.weather(city))
 
-    @bot.event
-    async def on_message(message):
-        if message.author == bot.user:
-            return
+@bot.tree.command(name="cocktail", description="Get a random cocktail suggestion")
+async def cocktail(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: cocktail\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the user a random cocktail.
 
-        mention = message.author.mention
-        username = str(message.author)
-        user_message = str(message.content)
-        channel = str(message.channel)
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message(embed=cocktailEmbed.cocktail())
 
-        print(f"{username} said: [{message.content}]' in: {channel}")
+@bot.tree.command(name="welcome", description="Test generate welcome message")
+async def welcome(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: welcome\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Tests the welcome image generation process and sends it.
 
-        if user_message == "!cocktails":
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    print(f"ATTEMPTING WELCOME IMAGE: \nIMG:{inter.user.avatar} \nNAME:{inter.user.name}\nSERVER_NAME:{inter.guild.name}")
+    file = await welcomeImage.generate_image(inter.user.avatar, inter.user.name, inter.guild.name)
+    await inter.response.send_message(file=file)
 
-            URL = "https://www.thecocktaildb.com/api/json/v1/1/random.php"
-            
-            valid_drink = False
-            response = requests.get(URL)
-            data = response.json()
-            
-            while not valid_drink:
-                tempdata = response.json()
-                ing1 = tempdata['drinks'][0]['strIngredient1']
-                ing2 = tempdata['drinks'][0]['strIngredient2']
-                ing3 = tempdata['drinks'][0]['strIngredient3']
+@bot.tree.command(name="eightball", description="Get an eight ball reading!")
+@app_commands.describe(question="What would you like to ask?")
+async def eightBallReading(interaction: discord.Interaction, question: str) -> None:
+    print(f"Command used:\nUsername: {interaction.user.name}\nCommand: eightball\nChannel ID: {interaction.channel.id}\nChannel: {interaction.channel.name}\nServer ID: {interaction.guild.name}\nServer: {interaction.guild.name}")
+    """
+        Sends the user an eightball reading for the issue that troubles them.
 
-                mes1 = tempdata['drinks'][0]['strMeasure1']
-                mes2 = tempdata['drinks'][0]['strMeasure2']
-                mes3 = tempdata['drinks'][0]['strMeasure3']
+    Args:
+        interaction (discord.Interaction): Discord interaction.
+        question (str): Question to receive the 8ball reading (Has no affect).
+    """
+    message = reading()
+    await interaction.response.send_message(message)
 
-                if (ing1 != None) and (ing2 != None) and (ing3 != None) and (mes1 != None) and (mes2 != None) and (mes3 != None):
-                    data = response.json()
-                    valid_drink = True
-                else:
-                    response = requests.get(URL)
-                
-            name = data['drinks'][0]['strDrink'].lower()
-            category= data['drinks'][0]['strCategory'].lower()
-            instructions = data['drinks'][0]['strInstructions']
-            
-            ing1 = data['drinks'][0]['strIngredient1']
-            ing2 = data['drinks'][0]['strIngredient2']
-            ing3 = data['drinks'][0]['strIngredient3']
+@bot.tree.command(name="roll", description="Roll a number 1-6!")
+async def roll_die(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: roll\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the user a random number between 1-6.
 
-            mes1 = data['drinks'][0]['strMeasure1']
-            mes2 = data['drinks'][0]['strMeasure2']
-            mes3 = data['drinks'][0]['strMeasure3']
-            
-            image = data['drinks'][0]['strDrinkThumb']
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message(f"You rolled a {rollDice.result()}!")
 
-            an = 'an'
-            if (category[0] != 'a') and (category[0] != 'e') and (category[0] != 'o') and (category[0] != 'i') and (category[0] != 'u'):
-                an = 'a'
+@bot.tree.command(name="help", description="Provide assistance in using commands!")
+async def help(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: help\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Has no real purpose. Sends the user a michael scott meme.
 
-            embed=discord.Embed(title=f"{name.title()}", 
-                                description=f"**-**{mes1} {ing1} \n **-** {mes2} {ing2} \n **-** {mes3} {ing3}\n ... And more \n \n \n **Instructions:** \n {instructions}", color=0xee00ff)
-            embed.set_author(name=f"{category.title()}")
-            embed.set_thumbnail(url=f"{image}")
-            
-            await message.channel.send(embed=embed)
-            await bot.process_commands(message)
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDMydTU3N2NhNDFqZXY5a2l4amtxY3I3Z2U5c3lxc3Q3bTN6cTR0ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/8vUEXZA2me7vnuUvrs/giphy.gif")
 
-        elif user_message.startswith('!weather '):
-            city = user_message.split(' ')
-            city = city[1]
-            key = '86cbf0be7a3752741f43640e6b06ea79'
+@bot.tree.command(name="meme", description="Get a current meme!")
+async def meme(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: meme\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the user a random meme from reddit.
 
-            URL=f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={key}&units=metric'
-            response = requests.get(URL)
-            data = response.json()
-            code = data['sys']['country']
-            current = int(data['main']['temp'])
-            high = int(data['main']['temp_max'])
-            low = int(data['main']['temp_min'])
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message(fetchMeme.get_meme())
 
-            embed=discord.Embed(title=f"{city}", description=f"The current temperature in {city} is {current}°C!", color=0xee00ff)
-            embed.set_thumbnail(url=f"https://flagsapi.com/{code}/flat/64.png")
-            embed.set_author(name="Weather")
-            embed.add_field(name="*High*", value=f"<:arrow_up:1117699590750224504> {high}°C", inline=False)
-            embed.add_field(name="*Low*", value=f"<:arrow_down:1117701037361475664> {low}°C", inline=True)
-            await message.channel.send(f"{mention}")
-            await message.channel.send(embed=embed)
+@bot.tree.command(name="bored", description="Get an activity to do while bored!")
+async def bored(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: bored\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the user a random activity.
 
-        elif user_message.startswith("!8ball"):
-            URL = "https://eightballapi.com/api?question=+&lucky=false"
-            response = requests.get(URL).json()
-            await message.channel.send(response['reading'])
-        
-        elif user_message.startswith("!roll"):
-            await message.channel.send("You rolled a " + str(randint(1,6)) + "!")
-        
-        elif user_message.startswith("!help"):
-            await message.channel.send(f"{mention} no")
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message(giveActivity.generate_activity())
 
-        elif user_message.startswith("!meme"):
-            URL = "https://meme-api.com/gimme"
-            response = requests.get(URL).json()
-            await message.channel.send(response['url'])
+@bot.tree.command(name="joke", description="Get a joke!")
+async def joke(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: join\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the user a random joke.
 
-        elif user_message.startswith("!bored"):
-            URL = "https://www.boredapi.com/api/activity/"
-            response = requests.get(URL).json()
-            await message.channel.send(f"{mention}, {response['activity']}")
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message(fetchJoke.generate_joke())
 
-        elif user_message.startswith("!joke"):
-            URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist&type=single"
-            response = requests.get(URL).json()
-            await message.channel.send(f"{mention}, {response['joke']}")
-
-    bot.run(DISCORD_TOKEN)
+bot.run(get_discord_token())
