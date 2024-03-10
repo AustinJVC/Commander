@@ -31,7 +31,7 @@ async def on_ready():
     """
     print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
     await bot.tree.sync()  # Sync commands to API
-    # Setting `Watching ` status
+    # Set status
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{get_status()}"))
 
 @bot.event
