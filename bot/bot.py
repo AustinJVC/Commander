@@ -19,6 +19,10 @@ tree = bot.tree
 def get_discord_token():
     with open('bot/token.txt', 'r') as file:
         return file.read().strip()
+    
+def get_status():
+    with open('bot/status.txt', 'r') as file:
+        return file.read().strip()
 
 @bot.event
 async def on_ready():
@@ -28,7 +32,7 @@ async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
     await bot.tree.sync()  # Sync commands to API
     # Setting `Watching ` status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="DieselBarbiieTTV"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{get_status()}"))
 
 @bot.event
 async def on_member_join(member):
