@@ -12,6 +12,7 @@ import rollDice
 import fetchMeme
 import giveActivity
 import fetchJoke
+import fetchQOTD
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 tree = bot.tree
@@ -166,5 +167,16 @@ async def joke(inter: discord.Interaction) -> None:
         inter (discord.Interaction): Discord interaction.
     """
     await inter.response.send_message(fetchJoke.generate_joke())
+
+@bot.tree.command(name="qotd", description="Get the quote of the day!")
+async def qotd(inter: discord.Interaction) -> None:
+    print(f"Command used:\nUsername: {inter.user.name}\nCommand: qotd\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
+    """
+        Sends the user the quote of the day.
+
+    Args:
+        inter (discord.Interaction): Discord interaction.
+    """
+    await inter.response.send_message(fetchQOTD.generate_qotd())
 
 bot.run(get_discord_token())
