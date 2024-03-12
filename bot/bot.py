@@ -4,7 +4,6 @@ from discord import app_commands
 from discord.ext import commands
 
 #Local imports
-import config
 import cocktailEmbed
 import weatherEmbed
 import welcomeImage
@@ -14,6 +13,12 @@ import fetchMeme
 import giveActivity
 import fetchJoke
 import fetchQOTD
+
+configFile = open("bot/config.txt", "r")
+
+token = configFile.readline().split("=")[1]
+status = configFile.readline().split("=")[1]
+log_channel =  configFile.readline().split("=")[1]
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 tree = bot.tree
@@ -26,7 +31,7 @@ async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
     await bot.tree.sync()  # Sync commands to API
     # Set status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{config.get_status()}"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{status}"))
 
 @bot.event
 async def on_member_join(member):
@@ -172,4 +177,57 @@ async def qotd(inter: discord.Interaction) -> None:
     """
     await inter.response.send_message(fetchQOTD.generate_qotd())
 
-bot.run(config.get_token())
+@bot.event
+async def on_message_edit(before, after):
+  channelID = bot.get_channel(int(log_channel))
+  if before.content != after.content:
+    embed=discord.Embed(title="Message Edited.", description=f"{before.author} ({before.author.global_name}) edited a message.", color=0xd400ff)
+    embed.add_field(name="Before:", value=f"{before.content}", inline=False)
+    embed.add_field(name="After:", value=f"{after.content}", inline=False)
+    embed.add_field(name="Channel:", value=f"{before.channel } ({before.id})", inline=False)
+    await channelID.send(embed=embed)
+
+@bot.event
+async def on_message_delete(message):
+    channelID = bot.get_channel(int(log_channel))
+    embed=discord.Embed(title="Message Deleted.", description=f"{message.author} ({message.author.global_name}) deleted a message.", color=0xd400ff)
+    embed.add_field(name="Deleted Message:", value=f"{message.content}", inline=False)
+    embed.add_field(name="Channel:", value=f"{message.channel } ({message.id})", inline=False)
+    await channelID.send(embed=embed)
+
+@bot.event
+async def on_voice_state_update(member, before, after):
+    channelID = bot.get_channel(int(log_channel))
+    if before.channel is None:
+        embed=discord.Embed(title=f"{member.name} joined a voice channel.", description=f"{member.name} ({member.global_name}) joined a channel.", color=0xd400ff)
+        embed.add_field(name="Channel:", value=f"{after.channel}", inline=False)
+        await channelID.send(embed=embed)
+    elif after.channel is None:
+        embed=discord.Embed(title=f"{member.name} left a voice channel.", description=f"{member.name} ({member.global_name}) left a channel.", color=0xd400ff)
+        embed.add_field(name="Channel:", value=f"{after.channel}", inline=False)
+        await channelID.send(embed=embed)
+    else:
+        embed=discord.Embed(title=f"{member.name} changed voice channels.", description=f"{member.name} ({member.global_name}) changed channels.", color=0xd400ff)
+        embed.add_field(name="Before:", value=f"{before.channel}", inline=False)
+        embed.add_field(name="After:", value=f"{after.channel}", inline=False)
+        await channelID.send(embed=embed)
+
+@bot.event
+async def on_member_join(member):
+    channelID = bot.get_channel(int(log_channel))
+    embed=discord.Embed(title="Member Joined.", description=f"{member.name} ({member.global_name}) joined the server.", color=0xd400ff)
+    embed.set_thumbnail(url=f"{member.avatar}")
+    embed.add_field(name="Member Name:", value=f"{member.name}", inline=False)
+    embed.add_field(name="Member ID:", value=f"{member.id}", inline=False)
+    await channelID.send(embed=embed)
+
+@bot.event
+async def on_member_remove(member):
+    channelID = bot.get_channel(int(log_channel))
+    embed=discord.Embed(title="Member Left.", description=f"{member.name} ({member.global_name}) left the server.", color=0xd400ff)
+    embed.set_thumbnail(url=f"{member.avatar}")
+    embed.add_field(name="Member Name:", value=f"{member.name}", inline=False)
+    embed.add_field(name="Member ID:", value=f"{member.id}", inline=False)
+    await channelID.send(embed=embed)
+
+bot.run(token)
