@@ -1,4 +1,4 @@
-configFile = open("res/bot/config.txt", "r")
+configFile = open("Files/bot/config.txt", "r")
 
 def get_token():
     token = configFile.readline().split("=")
