@@ -3,9 +3,45 @@
 
 Commander is a Discord bot created as a personal project during the summer of 2023. It is currently under (somewhat) active development and intended to be a fun and helpful addition to your Discord server.    
 
-While Commander currently offers features such as music playback, welcome image generation, and various entertainment functionalities, it's important to note that it's still in its very early stages. Please expect potential bugs and limitations as development progresses.    
+Commander currently offers features such as music playback, welcome image generation, various entertainment functionalities, and logging. However, it's important to note that it's still in its very early stages. Please expect potential bugs and limitations as development progresses.    
 
 I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through email.    
+
+## Quick Start
+### Download
+
+Download the files onto the system you'll be hosting them from. Many discord bot hosting services have options to just automatically pull from a github repo. I'm not going to go in-depth into how to download files cause it's pretty self-explanatory.
+
+### Setup
+
+So you got the files, congratulations! You may notice if you just click run you'll get a bunch of errors. That's cause you haven't set it up silly! 
+
+#### Directory Changes
+
+First, we must change the file directories contained in the program. There are a couple directories located around the `bot.py` file. Below is a list of the directories you may have to change. 
+
+- (`bot.py/Line 17`) Config: You may need to change this directory to where you hold your `config.txt` file. *This file will be created in the next step*
+- (`welcomeImage.py/Line 24`) Background: You may need to change this directory to where you hold your background images. *These files are stored in `res/welcomeImages`*
+- (`Music Functionality`) If you're using the music branch, it's a lost cause. You're on your own with that one chief!
+
+#### Config
+
+We need to create a config file to unlock Commanders full capability. By default I've loaded this file as `/bot/config.txt`, but you can put it wherever as long as you updated the directory. The config file has this format:
+
+```
+BOT_TOKEN=your_token_here
+BOT_STATUS=your_bot_status
+LOG_CHANNEL_ID=log_channel_ID
+```
+
+- BOT_TOKEN: Your bot token.
+- BOT_STATUS: The status you want on your bot. It will display as "Watching {your_bot_status}"
+
+- LOG_CHANNEL_ID: The channel ID of the logging chat in your server. Commander will automatically send logging information to this channel. Please make sure Commander has access to this channel. 
+
+### Run Script
+Boom! you're done. Simply run the script and everything should work as intended. If that isn't the case, send me an email and I'll help you out.
+
 
 ## Features:
 
@@ -18,7 +54,7 @@ Commander allows you to play audio from YouTube links directly in voice channels
 
 **Important Note:**
 
-- This feature works, but is currently in an experimental stage and has only been tested locally. A separate branch has been created to 
+- This feature works, but is currently in an experimental stage and has only been tested locally. A separate branch has been created with music functionality, but it is no longer updated.
 - You might need to adjust the code to specify the correct directory location for your ffmpeg installation.
 
 #### Music Commands:
@@ -90,6 +126,18 @@ Gives the user a joke.
 Makes an [API](https://v2.jokeapi.dev/) request for a joke. Sends the response back to the user as a plain text message. Please note, that these jokes are hard-coded to be dark. This can be fixed by modifying the API request link.
 
 /joke  
+
+#### QOTD
+
+Gives the user the quote of the day (QOTD).
+
+Makes an [API](https://zenquotes.io/api/today) request for the QOTD. Sends the response back to the user as a plain text message. Please note, that the quotes changes everyday at 00:00UTC.
+
+/qotd
+
+### Logging:
+
+Commander features logging capabilities that will send a message to a specified logging channel. This channel can be edited through the CONFIG.txt file. To change the channel, copy the ID of the channel and place it in the config file.
 
 ## Technical Details:
 

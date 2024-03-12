@@ -204,7 +204,7 @@ async def on_voice_state_update(member, before, after):
         await channelID.send(embed=embed)
     elif after.channel is None:
         embed=discord.Embed(title=f"{member.name} left a voice channel.", description=f"{member.name} ({member.global_name}) left a channel.", color=0xd400ff)
-        embed.add_field(name="Channel:", value=f"{after.channel}", inline=False)
+        embed.add_field(name="Channel:", value=f"{before.channel}", inline=False)
         await channelID.send(embed=embed)
     else:
         embed=discord.Embed(title=f"{member.name} changed voice channels.", description=f"{member.name} ({member.global_name}) changed channels.", color=0xd400ff)
@@ -215,19 +215,23 @@ async def on_voice_state_update(member, before, after):
 @bot.event
 async def on_member_join(member):
     channelID = bot.get_channel(int(log_channel))
-    embed=discord.Embed(title="Member Joined.", description=f"{member.name} ({member.global_name}) joined the server.", color=0xd400ff)
+    embed=discord.Embed(title="Member Joined.", url=f"https://discordlookup.com/user/{member.id}", color=0x7fff00)
     embed.set_thumbnail(url=f"{member.avatar}")
-    embed.add_field(name="Member Name:", value=f"{member.name}", inline=False)
-    embed.add_field(name="Member ID:", value=f"{member.id}", inline=False)
+    embed.set_author(name=f"{member.global_name}")
+    embed.add_field(name=f"Name:", value=f"{member.name}", inline=True)
+    embed.add_field(name=f"Global Name:", value=f"{member.global_name}", inline=True)
+    embed.add_field(name=f"ID:", value=f"{member.id}", inline=True)
     await channelID.send(embed=embed)
 
 @bot.event
 async def on_member_remove(member):
     channelID = bot.get_channel(int(log_channel))
-    embed=discord.Embed(title="Member Left.", description=f"{member.name} ({member.global_name}) left the server.", color=0xd400ff)
+    embed=discord.Embed(title="Member Left.", url=f"https://discordlookup.com/user/{member.id}", color=0xff0000)
     embed.set_thumbnail(url=f"{member.avatar}")
-    embed.add_field(name="Member Name:", value=f"{member.name}", inline=False)
-    embed.add_field(name="Member ID:", value=f"{member.id}", inline=False)
+    embed.set_author(name=f"{member.global_name}")
+    embed.add_field(name=f"Name:", value=f"{member.name}", inline=True)
+    embed.add_field(name=f"Global Name:", value=f"{member.global_name}", inline=True)
+    embed.add_field(name=f"ID:", value=f"{member.id}", inline=True)
     await channelID.send(embed=embed)
 
 bot.run(token)
