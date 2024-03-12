@@ -33,20 +33,6 @@ async def on_ready():
     # Set status
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{status}"))
 
-@bot.event
-async def on_member_join(member):
-    """
-        Calls welcomeImage to generate a welcome image with the users avatar, username, and server name.
-
-    Args:
-        member (member): Member who has joined the server.
-    """
-    channel = member.guild.system_channel
-    print(f"ATTEMPTING IMAGE: \n IMG:{member.avatar.url} \n NAME:{member.name}\n SERVER_NAME:{member.guild.name}") #Prints status to console with users avatar, username, and server name
-    file = await welcomeImage.generate_image(member.avatar.url, member.name, member.guild.name) #Calls image generator to create the image.
-    await channel.send(f"{member.mention}") #Sends a message mentioning the user.
-    await channel.send(file=file) #Sends the welcome image as a file.
-
 @bot.tree.command(name="echo", description="Echoes a message.")
 @app_commands.describe(message="The message to echo.")
 async def echo(inter: discord.Interaction, message: str) -> None:
@@ -214,6 +200,19 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_member_join(member):
+    """
+        Calls welcomeImage to generate a welcome image with the users avatar, username, and server name. then sends a message to the server log.
+
+    Args:
+        member (member): Member who has joined the server.
+    """
+    channel = member.guild.system_channel
+    print(f"ATTEMPTING IMAGE: \n IMG:{member.avatar.url} \n NAME:{member.name}\n SERVER_NAME:{member.guild.name}") #Prints status to console with users avatar, username, and server name
+    file = await welcomeImage.generate_image(member.avatar.url, member.name, member.guild.name) #Calls image generator to create the image.
+    await channel.send(f"{member.mention}") #Sends a message mentioning the user.
+    await channel.send(file=file) #Sends the welcome image as a file.
+
+
     channelID = bot.get_channel(int(log_channel))
     embed=discord.Embed(title="Member Joined.", url=f"https://discordlookup.com/user/{member.id}", color=0x56FF00)
     embed.set_thumbnail(url=f"{member.avatar}")
