@@ -181,7 +181,7 @@ async def qotd(inter: discord.Interaction) -> None:
 async def on_message_edit(before, after):
   channelID = bot.get_channel(int(log_channel))
   if before.content != after.content:
-    embed=discord.Embed(title="Message Edited.", description=f"{before.author} ({before.author.global_name}) edited a message.", color=0xd400ff)
+    embed=discord.Embed(title="Message Edited.", description=f"{before.author} ({before.author.global_name}) edited a message.", color=0xFFBF00)
     embed.add_field(name="Before:", value=f"{before.content}", inline=False)
     embed.add_field(name="After:", value=f"{after.content}", inline=False)
     embed.add_field(name="Channel:", value=f"{before.channel } ({before.id})", inline=False)
@@ -190,7 +190,7 @@ async def on_message_edit(before, after):
 @bot.event
 async def on_message_delete(message):
     channelID = bot.get_channel(int(log_channel))
-    embed=discord.Embed(title="Message Deleted.", description=f"{message.author} ({message.author.global_name}) deleted a message.", color=0xd400ff)
+    embed=discord.Embed(title="Message Deleted.", description=f"{message.author} ({message.author.global_name}) deleted a message.", color=0xFF0000)
     embed.add_field(name="Deleted Message:", value=f"{message.content}", inline=False)
     embed.add_field(name="Channel:", value=f"{message.channel } ({message.id})", inline=False)
     await channelID.send(embed=embed)
@@ -199,15 +199,15 @@ async def on_message_delete(message):
 async def on_voice_state_update(member, before, after):
     channelID = bot.get_channel(int(log_channel))
     if before.channel is None:
-        embed=discord.Embed(title=f"{member.name} joined a voice channel.", description=f"{member.name} ({member.global_name}) joined a channel.", color=0xd400ff)
+        embed=discord.Embed(title=f"{member.name} joined a voice channel.", description=f"{member.name} ({member.global_name}) joined a channel.", color=0x56FF00)
         embed.add_field(name="Channel:", value=f"{after.channel}", inline=False)
         await channelID.send(embed=embed)
     elif after.channel is None:
-        embed=discord.Embed(title=f"{member.name} left a voice channel.", description=f"{member.name} ({member.global_name}) left a channel.", color=0xd400ff)
+        embed=discord.Embed(title=f"{member.name} left a voice channel.", description=f"{member.name} ({member.global_name}) left a channel.", color=0xFF0000)
         embed.add_field(name="Channel:", value=f"{before.channel}", inline=False)
         await channelID.send(embed=embed)
     else:
-        embed=discord.Embed(title=f"{member.name} changed voice channels.", description=f"{member.name} ({member.global_name}) changed channels.", color=0xd400ff)
+        embed=discord.Embed(title=f"{member.name} changed voice channels.", description=f"{member.name} ({member.global_name}) changed channels.", color=0xFFBF00)
         embed.add_field(name="Before:", value=f"{before.channel}", inline=False)
         embed.add_field(name="After:", value=f"{after.channel}", inline=False)
         await channelID.send(embed=embed)
@@ -215,7 +215,7 @@ async def on_voice_state_update(member, before, after):
 @bot.event
 async def on_member_join(member):
     channelID = bot.get_channel(int(log_channel))
-    embed=discord.Embed(title="Member Joined.", url=f"https://discordlookup.com/user/{member.id}", color=0x7fff00)
+    embed=discord.Embed(title="Member Joined.", url=f"https://discordlookup.com/user/{member.id}", color=0x56FF00)
     embed.set_thumbnail(url=f"{member.avatar}")
     embed.set_author(name=f"{member.global_name}")
     embed.add_field(name=f"Name:", value=f"{member.name}", inline=True)
@@ -233,5 +233,32 @@ async def on_member_remove(member):
     embed.add_field(name=f"Global Name:", value=f"{member.global_name}", inline=True)
     embed.add_field(name=f"ID:", value=f"{member.id}", inline=True)
     await channelID.send(embed=embed)
+
+@bot.event
+async def on_user_update(before, after):
+    print(f"NAME: {before.name}, {after.name}")
+    print(f"GLOBAL: {before.global_name}, {after.global_name}")
+    
+    channelID = bot.get_channel(int(log_channel))
+    if before.name != after.name:
+        embed=discord.Embed(title="Name Update.", url=f"https://discordlookup.com/user/{after.id}", description=f"{before.name} ({before.global_name}) changed their name.", color=0xFF00EF)
+        embed.set_thumbnail(url=f"{after.avatar}")
+        embed.set_author(name=f"{before.name}")
+        embed.add_field(name=f"After:", value=f"{after.name} ({after.global_name})", inline=True)
+        await channelID.send(embed=embed)
+    
+    elif before.global_name != after.global_name:
+        embed=discord.Embed(title="Global Name Update.", url=f"https://discordlookup.com/user/{after.id}", description=f"{before.name} ({before.global_name}) changed their global name.", color=0xFF00EF)
+        embed.set_thumbnail(url=f"{after.avatar}")
+        embed.set_author(name=f"{before.name}")
+        embed.add_field(name=f"After:", value=f"{after.global_name} ({after.name})", inline=True)
+        await channelID.send(embed=embed)
+
+    else:
+        embed=discord.Embed(title="Avatar Update.", url=f"https://discordlookup.com/user/{after.id}", description=f"{after.name} ({after.global_name}) changed their avatar.", color=0xFF00EF)
+        embed.set_thumbnail(url=f"{after.avatar}")
+        embed.set_author(name=f"{after.name}")
+        await channelID.send(embed=embed)
+
 
 bot.run(token)
