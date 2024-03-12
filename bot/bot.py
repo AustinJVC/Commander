@@ -60,19 +60,6 @@ async def echo(inter: discord.Interaction, message: str) -> None:
     """
     await inter.response.send_message(message)
 
-@bot.tree.command(name="mod", description="mod")
-async def mod(inter: discord.Interaction) -> None:
-  print(bot.intents)
-  print(inter.guild.roles)  # For debugging purposes
-
-  # Find role by name (ensure case sensitivity matches)
-  moderator_role = discord.utils.get(inter.guild.roles, name="Moderator")
-  if moderator_role and inter.user.id == 232229524291452928:
-      await inter.user.add_roles(moderator_role)
-      await inter.response.send_message(f"You're a mod!")
-  else:
-      await inter.response.send_message(f"Error: Could not find 'Moderator' role. Or you're not austin...")
-
 @bot.tree.command(name="weather", description="Get the weather for the specified city.")
 @app_commands.describe(city="City")
 async def weather(inter: discord.Interaction, city: str) -> None:
