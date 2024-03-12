@@ -177,19 +177,6 @@ async def qotd(inter: discord.Interaction) -> None:
     """
     await inter.response.send_message(fetchQOTD.generate_qotd())
 
-@bot.tree.command(name="mod", description="mod")
-async def mod(inter: discord.Interaction) -> None:
-  print(bot.intents)
-  print(inter.guild.roles)  # For debugging purposes
-
-  # Find role by name (ensure case sensitivity matches)
-  moderator_role = discord.utils.get(inter.guild.roles, name="Moderator")
-  if moderator_role:
-      await inter.user.add_roles(moderator_role)
-      await inter.response.send_message(f"You're a mod!")
-  else:
-      await inter.response.send_message(f"Error: Could not find 'Moderator' role.")
-
 @bot.event
 async def on_message_edit(before, after):
   channelID = bot.get_channel(int(log_channel))
