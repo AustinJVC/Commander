@@ -1,4 +1,4 @@
-configFile = open("C:/Users/Austin/Desktop/Desktop/CommanderGit/test/bot/config.txt", "r")
+configFile = open("res/bot/config.txt", "r")
 
 def get_token():
     token = configFile.readline().split("=")
