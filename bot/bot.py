@@ -16,7 +16,7 @@ import fetchJoke
 import fetchQOTD
 import ordinal
 
-configFile = open("bot/config.txt", "r")
+configFile = open("config.txt", "r")
 
 token = configFile.readline().split("=")[1]
 status = configFile.readline().split("=")[1]

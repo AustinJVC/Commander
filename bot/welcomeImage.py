@@ -21,7 +21,7 @@ async def generate_image(member_avatar, member_name, server_name):
     #Selects a background image
     background_image = ["road.jpg", "sky.jpg", "skyline.jpg"]
     background_number = randrange(3)
-    background = Editor("res/welcomeMessages/" + background_image[background_number])
+    background = Editor("../res/welcomeMessages/" + background_image[background_number])
     
     
     print("SELECTED BACKGROUND IMAGE")
