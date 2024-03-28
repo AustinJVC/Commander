@@ -28,7 +28,7 @@ async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
     await bot.tree.sync()  # Sync commands to API
     # Set status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{parseconfig.get_status}"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{str(parseconfig.get_status())}"))
 
 @bot.tree.command(name="echo", description="Echoes a message.")
 @app_commands.describe(message="The message to echo.")
