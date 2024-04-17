@@ -5,7 +5,7 @@ from discord.ext import commands
 import datetime
 
 #Local imports
-import parseconfig
+import parseConfig
 import cocktailEmbed
 import weatherEmbed
 import welcomeImage
@@ -28,7 +28,7 @@ async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
     await bot.tree.sync()  # Sync commands to API
     # Set status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{str(parseconfig.get_status())}"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{str(parseConfig.get_status())}"))
 
 @bot.tree.command(name="echo", description="Echoes a message.")
 @app_commands.describe(message="The message to echo.")
@@ -165,7 +165,7 @@ async def on_message_edit(before, after):
     timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
     footer = f"ID: {after.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(parseconfig.get_log_channel()))
+    channelID = bot.get_channel(int(parseConfig.get_log_channel()))
     if before.content != after.content:
         embed=discord.Embed(title=f"Message edited in #{after.channel.name}.", color=0xFFBF00)
         embed.set_author(name=f"{after.author.name}", url=f"https://discordlookup.com/user/{after.author.id}", icon_url=f"{after.author.avatar}")
@@ -179,7 +179,7 @@ async def on_message_delete(message):
     timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
     footer = f"ID: {message.author.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(parseconfig.get_log_channel))
+    channelID = bot.get_channel(int(parseConfig.get_log_channel))
     embed=discord.Embed(title=f"Message deleted in #{message.channel.name}.", color=0xFF0000)
     embed.set_author(name=f"{message.author.name}", url=f"https://discordlookup.com/user/{message.author.id}", icon_url=f"{message.author.avatar}")
     embed.add_field(name="Deleted Message:", value=f"{message.content}", inline=False)
@@ -190,7 +190,7 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    channelID = bot.get_channel(int(parseconfig.get_log_channel))
+    channelID = bot.get_channel(int(parseConfig.get_log_channel))
     timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
     footer = f"ID: {member.id} - {timestamp}"
 
@@ -234,7 +234,7 @@ async def on_member_join(member):
     created = member.created_at.strftime(f"%B {ordinal.get_ordinal(member.created_at.day)} %Y")
     footer = f"ID: {member.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(parseconfig.get_log_channel))
+    channelID = bot.get_channel(int(parseConfig.get_log_channel))
     embed=discord.Embed(title="Member Joined.", color=0x56FF00)
     embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
     embed.add_field(name=f"{member.name} (joined {ordinal.get_ordinal(join_position)}).", value=f"Account created {created}.", inline=True)
@@ -247,7 +247,7 @@ async def on_member_remove(member):
     joined = member.joined_at.strftime(f"%B {ordinal.get_ordinal(member.joined_at.day)} %Y")
     footer = f"ID: {member.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(parseconfig.get_log_channel))
+    channelID = bot.get_channel(int(parseConfig.get_log_channel))
     embed=discord.Embed(title="Member Left.", color=0xff0000)
     embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
     embed.add_field(name=f"{member.name} joined on {joined}.", value=f"", inline=True)
@@ -262,7 +262,7 @@ async def on_user_update(before, after):
     footer = f"ID: {after.id} - {timestamp}"
 
 
-    channelID = bot.get_channel(int(parseconfig.get_log_channel))
+    channelID = bot.get_channel(int(parseConfig.get_log_channel))
     if before.name != after.name:
         embed=discord.Embed(title="Member Name Update.", color=0xFF00EF)
         embed.set_author(name=f"{before.name}", url=f"https://discordlookup.com/user/{after.id}", icon_url=f"{before.avatar}")
@@ -287,4 +287,4 @@ async def on_user_update(before, after):
         await channelID.send(embed=embed)
 
 
-bot.run(parseconfig.get_token())
+bot.run(parseConfig.get_token())
