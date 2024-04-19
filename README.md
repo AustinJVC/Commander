@@ -8,25 +8,27 @@ Commander currently offers features such as music playback, welcome image genera
 I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through email.
 
 ## Quick Start
+
 ### Download
 
-Download the files onto the system you'll be hosting them from. Many discord bot hosting services have options to just automatically pull from a github repo. I'm not going to go in-depth into how to download files cause it's pretty self-explanatory.
+1. Download the Files: Download the bot files onto the system you'll use to host your bot. Many Discord bot hosting services offer a convenient option to automatically pull your files directly from a GitHub repository. This eliminates the need for manual downloading, which we won't cover in this guide as it's a common process.
 
 ### Setup
 
-So you got the files, congratulations! You may notice if you just click run you'll get a bunch of errors. That's cause you haven't set it up silly! 
+2. Configuration Required: Once you have downloaded the files, attempting to run the bot directly will likely result in errors. This is because the program requires some configuration adjustments before it can function properly.
 
 #### Directory Changes
 
-First, we must change the file directories contained in the program. There are a couple directories located around the `bot.py` file. Below is a list of the directories you may have to change. 
+Here's a breakdown of the specific directories within the bot's code that you might need to modify:
 
-- (`bot.py/Line 17`) Config: You may need to change this directory to where you hold your `config.txt` file. *This file will be created in the next step*
-- (`welcomeImage.py/Line 24`) Background: You may need to change this directory to where you hold your background images. *These files are stored in `res/welcomeImages`*
-- (`Music Functionality`) If you're using the music branch, it's a lost cause. You're on your own with that one chief!
+1. **Config** (bot.py, Line 17): This directory points to your config.txt file. We'll create this file in the next step. Update this path to reflect where you'll store your configuration file.  
+2. **Background Images (welcomeImage.py, Line 24)**: This directory points to the location of your background images used for welcome messages. These images should be stored in a subfolder named res/welcomeImages. Update this path to match your image location.  
+
+*Just to let you know, if you're using the music functional branch of the code, please be aware that setting up music playback requires additional configuration beyond the scope of this guide.*
 
 #### Config
 
-We need to create a config file to unlock Commanders full capability. By default I've loaded this file as `/bot/config.txt`, but you can put it wherever as long as you updated the directory. The config file has this format:
+We need to create a config file to unlock Commander's full capability. By default I've loaded this file as `/bot/config.txt`, but you can put it wherever as long as you updated the directory. The config file has this format:
 
 ```
 BOT_TOKEN=your_token_here
@@ -40,7 +42,7 @@ LOG_CHANNEL_ID=log_channel_ID
 - LOG_CHANNEL_ID: The channel ID of the logging chat in your server. Commander will automatically send logging information to this channel. Please make sure Commander has access to this channel. 
 
 ### Run Script
-Boom! you're done. Simply run the script and everything should work as intended. If that isn't the case, send me an email and I'll help you out.
+Boom! You're done. Run the script and everything should work as intended. Send me an email and I'll help you out if that isn't the case.
 
 
 ## Features:
@@ -76,7 +78,7 @@ Commander automatically creates and sends a personalized welcome image to the #a
 
 **Customizing welcome images:**
 
-Replace existing background images in the "res/welcomeMessages/" folder with your preferred ones.
+Replace existing background images with your preferred ones in the "res/welcomeMessages/" folder.
 Update the code with new filenames and adjust the available backgrounds for seamless integration.
 
 ### Fun:
@@ -100,7 +102,7 @@ Makes an [API](https://thecocktaildb.com) request. Formats the information recei
 #### Weather
 
 
-Displays the current temperature of the requested city to the user. Provides daily high, daily low, current temperature, and the flag of the country the city resides.  
+Displays the current temperature of the requested city to the user. Provides daily high, daily low, current temperature, and the flag of the country.  
 Makes an [API](https://openweathermap.org) request for weather, and another API(https://flagsapi.com) request for the flag of the region. Formats the information received as a discord embed, and sends the embed back to the user.
 
 /weather [CITY] 
@@ -123,7 +125,7 @@ Makes an [API](https://www.boredapi.com) request for an activity. Sends the resp
 #### Joke
 
 Gives the user a joke.  
-Makes an [API](https://v2.jokeapi.dev/) request for a joke. Sends the response back to the user as a plain text message. Please note, that these jokes are hard-coded to be dark. This can be fixed by modifying the API request link.
+Makes an [API](https://v2.jokeapi.dev/) request for a joke. Sends the response back to the user as a plain text message. Please note, that these jokes may be hard-coded to be dark depending on the version you are using. This can be fixed by modifying the API request link.
 
 /joke  
 
@@ -131,7 +133,7 @@ Makes an [API](https://v2.jokeapi.dev/) request for a joke. Sends the response b
 
 Gives the user the quote of the day (QOTD).
 
-Makes an [API](https://zenquotes.io/api/today) request for the QOTD. Sends the response back to the user as a plain text message. Please note, that the quotes changes everyday at 00:00UTC.
+Makes an [API](https://zenquotes.io/api/today) request for the QOTD. Sends the response back to the user as a plain text message. Please note, that the quotes change every day at 00:00UTC.
 
 /qotd
 
