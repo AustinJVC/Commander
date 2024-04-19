@@ -11,11 +11,11 @@ I welcome feedback and suggestions as I continue to enhance Commander's capabili
 
 ### Download
 
-1. Download the Files: Download the bot files onto the system you'll use to host your bot. Many Discord bot hosting services offer a convenient option to automatically pull your files directly from a GitHub repository. This eliminates the need for manual downloading, which we won't cover in this guide as it's a common process.
+Download the Files: Download the bot files onto the system you'll use to host your bot. Many Discord bot hosting services offer a convenient option to automatically pull your files directly from a GitHub repository. This eliminates the need for manual downloading, which we won't cover in this guide as it's a common process.
 
 ### Setup
 
-2. Configuration Required: Once you have downloaded the files, attempting to run the bot directly will likely result in errors. This is because the program requires some configuration adjustments before it can function properly.
+Configuration Required: Once you have downloaded the files, attempting to run the bot directly will likely result in errors. This is because the program requires some configuration adjustments before it can function properly.
 
 #### Directory Changes
 
