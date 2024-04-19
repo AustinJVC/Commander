@@ -1,11 +1,11 @@
 # Commander - Discord Bot
 ## About Commander
 
-Commander is a Discord bot created as a personal project during the summer of 2023. It is currently under (somewhat) active development and intended to be a fun and helpful addition to your Discord server.    
+Commander is a Discord bot created as a personal project during the summer of 2023. It is currently under (somewhat) active development and intended to be a fun and helpful addition to your Discord server.  
 
-Commander currently offers features such as music playback, welcome image generation, various entertainment functionalities, and logging. However, it's important to note that it's still in its very early stages. Please expect potential bugs and limitations as development progresses.    
+Commander currently offers features such as music playback, welcome image generation, various entertainment functionalities, and logging. However, it's important to note that it is still in its very early stages. Please expect potential bugs and limitations as development progresses.  
 
-I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through email.    
+I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through email.
 
 ## Quick Start
 ### Download
