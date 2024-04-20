@@ -47,7 +47,7 @@ async def echo(inter: discord.Interaction, message: str) -> None:
     """
     await inter.response.send_message(message)
 
-@bot.tree.command(name="weather", description="Get the weather for the specified city. To specify a city in a specific country, simply use the format \'Toronto,CA\' ")
+@bot.tree.command(name="weather", description="Get the weather for the specified city. To specify country, simply use the format \'Toronto,CA\'")
 @app_commands.describe(city="City")
 async def weather(inter: discord.Interaction, city: str) -> None:
     print(f"Command used:\nUsername: {inter.user.name}\nCommand: weather\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
