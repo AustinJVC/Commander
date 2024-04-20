@@ -1,8 +1,11 @@
-configFile = open("../config.txt", "r")
+configFile = open("config.txt", "r")
 
-token = configFile.readline().split("=")[1]
-status = configFile.readline().split("=")[1]
-log_channel =  configFile.readline().split("=")[1]
+token = configFile.readline().split("=")[1].strip()
+status = configFile.readline().split("=")[1].strip()
+log_channel =  configFile.readline().split("=")[1].strip()
+
+print(f"Config read as:\nToken: {token}\nStatus: {status}\nLogs: {log_channel}")
+
 
 def get_token():
     return token
