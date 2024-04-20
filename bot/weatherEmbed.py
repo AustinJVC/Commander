@@ -1,5 +1,8 @@
 import discord
 import requests
+import parseConfig
+
+KEY = parseConfig.get_weather_api_key()
 
 def weather(city):
     """
@@ -13,8 +16,7 @@ def weather(city):
     """
 
     #Make the API call
-    key = '86cbf0be7a3752741f43640e6b06ea79'
-    URL=f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={key}&units=metric'
+    URL=f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={KEY}&units=metric'
     response = requests.get(URL)
     data = response.json()
 

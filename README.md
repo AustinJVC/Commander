@@ -34,6 +34,7 @@ We need to create a config file to unlock Commander's full capability. By defaul
 BOT_TOKEN=your_token_here
 BOT_STATUS=your_bot_status
 LOG_CHANNEL_ID=log_channel_ID
+WEATHER_API=your_weather_api_key
 ```
 
 - BOT_TOKEN: Your bot token.

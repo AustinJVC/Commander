@@ -9,6 +9,9 @@ status = status_line.split("=")[1]
 log_channel_line = configFile.readline().strip()
 log_channel = log_channel_line.split("=")[1]
 
+weather_api_key_line = configFile.readline().strip()
+weather_api_key = weather_api_key_line.split("=")[1]
+
 configFile.close()
 
 print(f"Config read as:\nToken: {token}\nStatus: {status}\nLogs: {log_channel}")
@@ -22,3 +25,6 @@ def get_status():
 
 def get_log_channel():
     return log_channel
+
+def get_weather_api_key():
+    return weather_api_key
