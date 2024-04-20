@@ -9,6 +9,6 @@ def generate_joke():
     Returns:
         response (str): The joke. 
     """
-    URL = "https://v2.jokeapi.dev/joke/Dark?type=single"
+    URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,racist,sexist&type=single"
     response = requests.get(URL).json()
     return response['joke']
