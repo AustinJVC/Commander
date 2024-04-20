@@ -142,6 +142,29 @@ Makes an [API](https://zenquotes.io/api/today) request for the QOTD. Sends the r
 
 Commander features logging capabilities that will send a message to a specified logging channel. This channel can be edited through the CONFIG.txt file. To change the channel, copy the ID of the channel and place it in the config file.
 
+#### Messages
+
+Sends an embed when a user **edits** a message. Commander shows the message before, after, author, author profile picture, author ID, and date.  
+
+Furthermore, Commander sends a similar embed when a user **deletes** a message, which includes the deleted message, author, author profile picture, author ID, date, and message ID. 
+
+#### Voice Channel Update
+
+Sends an embed when a user **changes** voice channels. Commander shows the previous channel, current voice channel, user, user profile picture, user ID, and date.  
+
+Sends an embed when a user **joins** a voice channel. Commander shows the current voice channel, user, user profile picture, user ID, and date.  
+
+Sends an embed when a user **leaves** a voice channel. Commander shows the previous channel, user, user profile picture, user ID, and date.  
+
+#### User Updates
+
+Sends an embed when a user **changes** their name. Commander shows the previous name, current voice name, user profile picture, user ID, and date.
+
+Sends an embed when a user **changes** their global name. Commander shows the previous global name, current global name, user profile picture, user ID, and date.  
+
+Sends an embed when a user **changes** their profile picture. Commander shows the new profile picture, user name, user ID, and date.  
+
+
 ## Technical Details:
 
 ### Languages Used: 
