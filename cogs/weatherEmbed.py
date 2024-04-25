@@ -1,6 +1,6 @@
 import discord
 import requests
-import parseConfig
+from  cogs import parseConfig
 
 KEY = parseConfig.get_weather_api_key()
 
