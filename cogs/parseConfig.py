@@ -1,4 +1,4 @@
-configFile = open("../config.txt", "r")
+configFile = open("./config.txt", "r")
 
 token_line = configFile.readline().strip()
 token = token_line.split("=")[1]
