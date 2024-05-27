@@ -24,7 +24,7 @@ Here's a breakdown of the specific directories within the bot's code that you mi
 1. **Config** (bot.py, Line 17): This directory points to your config.txt file. We'll create this file in the next step. Update this path to reflect where you'll store your configuration file.  
 2. **Background Images (welcomeImage.py, Line 24)**: This directory points to the location of your background images used for welcome messages. These images should be stored in a subfolder named res/welcomeImages. Update this path to match your image location.  
 
-*Just to let you know, if you're using the music functional branch of the code, please be aware that setting up music playback requires additional configuration beyond the scope of this guide.*
+*FYI, if you're using the music branch of this code, please be aware that this code is not kept up-to-date and may no longer work. Setting up music playback requires additional configuration beyond the scope of this guide. Music commands are still showcased in the features section.*
 
 #### Config
 
