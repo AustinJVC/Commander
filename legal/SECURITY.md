@@ -11,7 +11,7 @@ We currently only consider security vulnerabilities in the main branch of the pr
 We encourage responsible disclosure of security vulnerabilities. If you believe you have found a security vulnerability in the project, please follow these steps:
 
 **Do not** publicly disclose the vulnerability until it has been addressed.  
-Send an email to commander@austinvc.ca with a detailed description of the vulnerability, including:  
+Send an email to contact@austinvc.ca with a detailed description of the vulnerability, including:  
 - Steps to reproduce the vulnerability
 - Potential impact of the vulnerability
 - Optional Patch or workaround for the vulnerability (if available)  

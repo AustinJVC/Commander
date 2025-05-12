@@ -48,4 +48,4 @@ We may update this Privacy Policy at any time. We will notify you of any changes
 
 ## 10. Contact Us
 
-If you have any questions about this Privacy Policy, please contact us at commander@austinvc.ca.
+If you have any questions about this Privacy Policy, please contact us at contact@austinvc.ca.

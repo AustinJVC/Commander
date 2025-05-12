@@ -3,11 +3,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import datetime
+from dotenv import load_dotenv
+import os
 
 #Local imports
-from  cogs import parseConfig
 from  cogs import cocktailEmbed
-from  cogs import weatherEmbed
+from  cogs import fetchWeather
 from  cogs import welcomeImage
 from  cogs.eightBallReading import reading
 from  cogs import rollDice
@@ -17,9 +18,29 @@ from  cogs import fetchJoke
 from  cogs import fetchQOTD
 from  cogs import ordinal
 
-TOKEN = parseConfig.get_token()
-STATUS = parseConfig.get_status()
-LOG_CHANNEL = parseConfig.get_log_channel()
+load_dotenv()
+
+DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+if DISCORD_BOT_TOKEN is None:
+    print("Error: DISCORD_BOT_TOKEN not found.")
+    print("Make sure you have a .env file with DISCORD_BOT_TOKEN=YOUR_TOKEN")
+    exit()
+
+DISCORD_BOT_STATUS = os.getenv('DISCORD_BOT_STATUS')
+if DISCORD_BOT_STATUS is None:
+    print("Warning: STATUS not found.")
+    print("Make sure you have a .env file with DISCORD_BOT_STATUS=YOUR_STATUS. Proceeding with no status.")
+    DISCORD_BOT_STATUS = " "
+
+LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
+if LOG_CHANNEL_ID is None:
+    print("Warning: LOG_CHANNEL_ID not found.")
+    print("Make sure you have a .env file with LOG_CHANNEL_ID=YOUR_LOG_CHANNEL_ID. Proceeding without logging capabilites.")
+
+WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
+if WEATHER_API_KEY is None:
+    print("Warning: WEATHER_API_KEY not found.")
+    print("Make sure you have a .env file with WEATHER_API_KEY=YOUR_WEATHER_API_KEY. Proceeding without weather capabilites.")
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 tree = bot.tree
@@ -27,12 +48,11 @@ tree = bot.tree
 @bot.event
 async def on_ready():
     """
-        Print to console bot has gone online, then sync commands with the Discord API
+        Print to console bot has gone online, then sync commands with the Discord API and set bot status.
     """
-    print(f"Logged in as {bot.user} (ID: {bot.user.id})") #Print bot status
-    await bot.tree.sync()  # Sync commands to API
-    # Set status
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{str(STATUS)}"))
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    await bot.tree.sync()
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{str(DISCORD_BOT_STATUS)}"))
 
 @bot.tree.command(name="echo", description="Echoes a message.")
 @app_commands.describe(message="The message to echo.")
@@ -46,19 +66,20 @@ async def echo(inter: discord.Interaction, message: str) -> None:
         message (str): Message to be echoed back.
     """
     await inter.response.send_message(message)
+    
+
 
 @bot.tree.command(name="weather", description="Get the weather for the specified city. To specify country, simply use the format \'Toronto,CA\'")
 @app_commands.describe(city="City")
 async def weather(inter: discord.Interaction, city: str) -> None:
     print(f"Command used:\nUsername: {inter.user.name}\nCommand: weather\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the current, high, and low temperatures for the requested city.
+    """  Sends the current, high, and low temperatures for the requested city.
 
     Args:
         interaction (discord.Interaction): Discord interaction.
-        city (str): City for the requested weather.
-    """
-    await inter.response.send_message(embed=weatherEmbed.weather(city))
+        city (str): City for the requested weather."""
+    await inter.response.send_message(embed=fetchWeather.weather(city, WEATHER_API_KEY))
+
 
 @bot.tree.command(name="cocktail", description="Get a random cocktail suggestion")
 async def cocktail(inter: discord.Interaction) -> None:
@@ -169,7 +190,7 @@ async def on_message_edit(before, after):
     timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
     footer = f"ID: {after.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(LOG_CHANNEL))
+    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
     if before.content != after.content:
         embed=discord.Embed(title=f"Message edited in #{after.channel.name}.", color=0xFFBF00)
         embed.set_author(name=f"{after.author.name}", url=f"https://discordlookup.com/user/{after.author.id}", icon_url=f"{after.author.avatar}")
@@ -183,7 +204,7 @@ async def on_message_delete(message):
     timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
     footer = f"ID: {message.author.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(LOG_CHANNEL))
+    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
     embed=discord.Embed(title=f"Message deleted in #{message.channel.name}.", color=0xFF0000)
     embed.set_author(name=f"{message.author.name}", url=f"https://discordlookup.com/user/{message.author.id}", icon_url=f"{message.author.avatar}")
     embed.add_field(name="Deleted Message:", value=f"{message.content}", inline=False)
@@ -194,7 +215,7 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_voice_state_update(member, before, after):
-    channelID = bot.get_channel(int(LOG_CHANNEL))
+    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
     timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
     footer = f"ID: {member.id} - {timestamp}"
 
@@ -238,7 +259,7 @@ async def on_member_join(member):
     created = member.created_at.strftime(f"%B {ordinal.get_ordinal(member.created_at.day)} %Y")
     footer = f"ID: {member.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(LOG_CHANNEL))
+    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
     embed=discord.Embed(title="Member Joined.", color=0x56FF00)
     embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
     embed.add_field(name=f"{member.name} (joined {ordinal.get_ordinal(join_position)}).", value=f"Account created {created}.", inline=True)
@@ -251,7 +272,7 @@ async def on_member_remove(member):
     joined = member.joined_at.strftime(f"%B {ordinal.get_ordinal(member.joined_at.day)} %Y")
     footer = f"ID: {member.id} - {timestamp}"
 
-    channelID = bot.get_channel(int(LOG_CHANNEL))
+    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
     embed=discord.Embed(title="Member Left.", color=0xff0000)
     embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
     embed.add_field(name=f"{member.name} joined on {joined}.", value=f"", inline=True)
@@ -266,7 +287,7 @@ async def on_user_update(before, after):
     footer = f"ID: {after.id} - {timestamp}"
 
 
-    channelID = bot.get_channel(int(LOG_CHANNEL))
+    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
     if before.name != after.name:
         embed=discord.Embed(title="Member Name Update.", color=0xFF00EF)
         embed.set_author(name=f"{before.name}", url=f"https://discordlookup.com/user/{after.id}", icon_url=f"{before.avatar}")
@@ -291,4 +312,4 @@ async def on_user_update(before, after):
         await channelID.send(embed=embed)
 
 
-bot.run(TOKEN)
+bot.run(DISCORD_BOT_TOKEN)

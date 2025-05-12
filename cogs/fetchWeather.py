@@ -1,26 +1,24 @@
 import discord
 import requests
-from  cogs import parseConfig
 
-KEY = parseConfig.get_weather_api_key()
-
-def weather(city):
+def weather(city, WEATHER_API_KEY):
     """
         Takes a user inputted city, sends an API call for the weather at that city, then a flag call for the country that city is in. Takes all that, and records a discord embed
         including the flag, daily high, low, and current temperatures.
 
     Args:
         city (str): The requested city temperatures
+        WEATHER_API_KEY (str): The API key for the weather api.
     Returns:
         Embed (discord.Embed): The weather formatted in a discord embed.
     """
 
     #Make the API call
-    URL=f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={KEY}&units=metric'
+    URL=f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric'
     response = requests.get(URL)
     data = response.json()
 
-    #Save the cocktail info as variables
+    #Save the weather info as variables
     code = data['sys']['country']
     current = int(data['main']['temp'])
     high = int(data['main']['temp_max'])

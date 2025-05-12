@@ -7,8 +7,7 @@ These Terms of Service ("Terms") govern your access and use of the Commander bot
 ## 2. User Representations
 
 By using the Bot, you represent and warrant that:
-
-- You are at least 13 years old (or the age of majority in your jurisdiction).  
+ 
 - You have the legal capacity to enter into a binding agreement.  
 - You will comply with all applicable laws and regulations.  
 - You will not use the Bot for any illegal or unauthorized purpose.  
@@ -41,4 +40,4 @@ We may update these Terms at any time. We will notify you of any changes by post
 
 ## 9. Contact Us
 
-If you have any questions about these Terms, please contact us at commander@austinvc.ca.
+If you have any questions about these Terms, please contact us at contact@austinvc.ca.
