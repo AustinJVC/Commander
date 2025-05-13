@@ -1,315 +1,196 @@
-#External Imports
+# External Imports
 import discord
-from discord import app_commands
+# from discord import app_commands # Not strictly needed if all commands are in Cogs
 from discord.ext import commands
-import datetime
+# import datetime # Not used directly here anymore
 from dotenv import load_dotenv
 import os
+import asyncio
+import logging # Import logging module
+# No longer need logging.handlers or sys
 
-#Local imports
-from  cogs import cocktailEmbed
-from  cogs import fetchWeather
-from  cogs import welcomeImage
-from  cogs.eightBallReading import reading
-from  cogs import rollDice
-from  cogs import fetchMeme
-from  cogs import giveActivity
-from  cogs import fetchJoke
-from  cogs import fetchQOTD
-from  cogs import ordinal
+# --- Simplified Logging Setup (File Only) ---
+# Configure logging to output INFO level messages and higher directly to a file.
+# This is called ONCE when the script starts.
+log_directory = "logs"
+log_file_path = os.path.join(log_directory, "discord_bot.log")
 
+# Ensure the log directory exists
+if not os.path.exists(log_directory):
+    try:
+        os.makedirs(log_directory)
+    except OSError as e:
+        # Use print for critical setup errors before logging is fully configured
+        print(f"CRITICAL: Could not create log directory '{log_directory}'. Logging disabled. Error: {e}", file=sys.stderr) 
+        # Exit or disable logging features if the directory is essential
+        exit(1) 
+
+logging.basicConfig(
+    level=logging.INFO,  # Set the minimum level to log (INFO, WARNING, ERROR, CRITICAL)
+    format='%(asctime)s [%(levelname)-8s] [%(name)-15s]: %(message)s', # Log message format
+    datefmt='%Y-%m-%d %H:%M:%S', # Timestamp format
+    filename=log_file_path, # <<< Direct logs to this file
+    filemode='a', # 'a' for append (default), 'w' for overwrite each time
+    encoding='utf-8', # Explicitly set encoding
+    force=True # Use force=True to allow reconfiguration if basicConfig was called before (e.g., by a library)
+)
+
+# --- Optional: Set discord.py's internal logger level ---
+# If you want discord.py logs in the file, ensure its level is >= INFO
+# If you want FEWER discord.py logs, set its level higher (e.g., WARNING)
+logging.getLogger('discord').setLevel(logging.INFO) 
+logging.getLogger('discord.http').setLevel(logging.WARNING)
+
+# --- Get a logger instance for THIS file (bot.py) ---
+# Best practice: use __name__ for the logger name (will be '__main__' when run directly)
+logger = logging.getLogger(__name__) 
+
+# --- Load Environment Variables ---
 load_dotenv()
+logger.info("Loading environment variables from .env file...") # This will go to the file
 
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 if DISCORD_BOT_TOKEN is None:
-    print("Error: DISCORD_BOT_TOKEN not found.")
-    print("Make sure you have a .env file with DISCORD_BOT_TOKEN=YOUR_TOKEN")
-    exit()
+    # Use CRITICAL for errors that prevent the bot from starting
+    logger.critical("CRITICAL: DISCORD_BOT_TOKEN not found in .env file. Bot cannot start.")
+    exit(1) # Exit if the token is missing
 
-DISCORD_BOT_STATUS = os.getenv('DISCORD_BOT_STATUS')
-if DISCORD_BOT_STATUS is None:
-    print("Warning: STATUS not found.")
-    print("Make sure you have a .env file with DISCORD_BOT_STATUS=YOUR_STATUS. Proceeding with no status.")
-    DISCORD_BOT_STATUS = " "
+DISCORD_BOT_STATUS = os.getenv('DISCORD_BOT_STATUS', "Watching things!") # Provide a default status
+logger.info(f"Bot status set to: '{DISCORD_BOT_STATUS}'")
 
-LOG_CHANNEL_ID = os.getenv('LOG_CHANNEL_ID')
-if LOG_CHANNEL_ID is None:
-    print("Warning: LOG_CHANNEL_ID not found.")
-    print("Make sure you have a .env file with LOG_CHANNEL_ID=YOUR_LOG_CHANNEL_ID. Proceeding without logging capabilites.")
-
+# --- API Key Checks (Example) ---
+# Log warnings for potentially missing optional keys needed by Cogs
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
 if WEATHER_API_KEY is None:
-    print("Warning: WEATHER_API_KEY not found.")
-    print("Make sure you have a .env file with WEATHER_API_KEY=YOUR_WEATHER_API_KEY. Proceeding without weather capabilites.")
+    # This is just an informational warning here; the Cog using it should handle the absence properly.
+    logger.warning("WEATHER_API_KEY not found in .env file. Weather-related commands may not function.")
+# Add similar checks/warnings for other optional API keys if needed
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-tree = bot.tree
+# Note: LOG_CHANNEL_ID is intentionally NOT checked/logged here, 
+# as it's for server activity logging, presumably handled within a specific Cog/event listener.
 
+# --- Bot Initialization ---
+logger.debug("Setting up Discord intents...") # DEBUG messages won't show with level=INFO
+intents = discord.Intents.default()
+intents.message_content = True # Required for message content related events (if any)
+intents.members = True         # Required for member join/update events (if any)
+intents.voice_states = True    # Required for voice state events (if any)
+
+logger.info("Initializing commands.Bot instance...") # INFO messages will show
+# Using commands.Bot allows for Cogs and potentially prefix commands (though focusing on slash)
+bot = commands.Bot(command_prefix="!", intents=intents) 
+
+# --- Cog Loading ---
+async def load_cogs():
+    """Finds and loads all Python files as cogs from the 'cogs' directory."""
+    cogs_path = 'cogs'
+    logger.info("-" * 20)
+    logger.info(f"Attempting to load cogs from directory: '{cogs_path}'...")
+    loaded_cogs_count = 0
+    failed_cogs_count = 0
+    
+    if not os.path.isdir(cogs_path):
+        logger.warning(f"Cogs directory '{cogs_path}' not found. Skipping Cog loading.")
+        return
+
+    for filename in os.listdir(cogs_path):
+        # Standard check: Python file, not __init__, not hidden/temporary
+        if filename.endswith('.py') and filename != '__init__.py' and not filename.startswith(('.', '_')):
+            cog_module_name = f"{cogs_path}.{filename[:-3]}" # Format like 'cogs.utility_cog'
+            try:
+                # The core command to load an extension (Cog)
+                await bot.load_extension(cog_module_name)
+                logger.info(f"  [OK] Successfully loaded cog: {cog_module_name}")
+                loaded_cogs_count += 1
+            except commands.ExtensionAlreadyLoaded:
+                 logger.warning(f"  [!] Cog already loaded: {cog_module_name}") # Should be rare if loaded once
+            except commands.ExtensionNotFound:
+                 logger.error(f"  [FAIL] Cog module not found: {cog_module_name}")
+                 failed_cogs_count += 1
+            except commands.NoEntryPointError:
+                 logger.error(f"  [FAIL] Cog '{cog_module_name}' has no setup() function.")
+                 failed_cogs_count += 1
+            except commands.ExtensionFailed as e:
+                 # Log the original error that occurred within the Cog's setup
+                 logger.error(f"  [FAIL] Cog '{cog_module_name}' setup failed: {e.original}", exc_info=True) 
+                 failed_cogs_count += 1
+            except Exception as e:
+                # Catch any other unexpected errors during loading
+                logger.error(f"  [FAIL] Failed to load cog {cog_module_name}: {type(e).__name__} - {e}", exc_info=True) 
+                failed_cogs_count += 1
+                
+    logger.info(f"Cog loading process complete. Loaded: {loaded_cogs_count}, Failed: {failed_cogs_count}")
+    logger.info("-" * 20)
+
+# --- Bot Events ---
 @bot.event
 async def on_ready():
     """
-        Print to console bot has gone online, then sync commands with the Discord API and set bot status.
+    Called once the bot is fully connected and ready. 
+    Syncs application commands and sets the bot's presence.
     """
-    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    await bot.tree.sync()
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{str(DISCORD_BOT_STATUS)}"))
+    logger.info("-" * 30)
+    logger.info(f"Logged in as: {bot.user.name} (ID: {bot.user.id})")
+    logger.info(f"Connected to {len(bot.guilds)} guild(s).")
+    logger.info(f"Using discord.py version: {discord.__version__}")
+    logger.info("Bot is ready and online.")
+    logger.info("-" * 30)
 
-@bot.tree.command(name="echo", description="Echoes a message.")
-@app_commands.describe(message="The message to echo.")
-async def echo(inter: discord.Interaction, message: str) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: echo\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Echos the users message back to them.
-
-    Args:
-        interaction (discord.Interaction): Discord interaction.
-        message (str): Message to be echoed back.
-    """
-    await inter.response.send_message(message)
+    # --- Sync Application Commands ---
+    logger.info("Attempting to sync application (slash) commands globally...")
+    try:
+        # Sync commands registered via Cogs or directly in bot.py
+        synced_commands = await bot.tree.sync() 
+        logger.info(f"Successfully synced {len(synced_commands)} application commands globally.")
+    except discord.errors.Forbidden:
+         logger.error("Failed to sync commands: Bot lacks the 'applications.commands' scope.")
+    except Exception as e:
+        logger.error(f"Failed to sync application commands: {e}", exc_info=True) 
     
+    # --- Set Bot Presence ---
+    logger.info(f"Setting bot presence to 'Watching {DISCORD_BOT_STATUS}'...")
+    try:
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(DISCORD_BOT_STATUS)))
+        logger.info("Bot presence updated successfully.")
+    except Exception as e:
+        logger.error(f"Failed to set bot presence: {e}", exc_info=True)
 
-
-@bot.tree.command(name="weather", description="Get the weather for the specified city. To specify country, simply use the format \'Toronto,CA\'")
-@app_commands.describe(city="City")
-async def weather(inter: discord.Interaction, city: str) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: weather\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """  Sends the current, high, and low temperatures for the requested city.
-
-    Args:
-        interaction (discord.Interaction): Discord interaction.
-        city (str): City for the requested weather."""
-    await inter.response.send_message(embed=fetchWeather.weather(city, WEATHER_API_KEY))
-
-
-@bot.tree.command(name="cocktail", description="Get a random cocktail suggestion")
-async def cocktail(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: cocktail\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the user a random cocktail.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message(embed=cocktailEmbed.cocktail())
-
-@bot.tree.command(name="welcome", description="Test generate welcome message")
-async def welcome(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: welcome\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Tests the welcome image generation process and sends it.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    print(f"ATTEMPTING WELCOME IMAGE: \nIMG:{inter.user.avatar} \nNAME:{inter.user.name}\nSERVER_NAME:{inter.guild.name}")
-    file = await welcomeImage.generate_image(inter.user.avatar, inter.user.name, inter.guild.name)
-    await inter.response.send_message(file=file)
-
-@bot.tree.command(name="eightball", description="Get an eight ball reading!")
-@app_commands.describe(question="What would you like to ask?")
-async def eightBallReading(interaction: discord.Interaction, question: str) -> None:
-    print(f"Command used:\nUsername: {interaction.user.name}\nCommand: eightball\nChannel ID: {interaction.channel.id}\nChannel: {interaction.channel.name}\nServer ID: {interaction.guild.name}\nServer: {interaction.guild.name}")
-    """
-        Sends the user an eightball reading for the issue that troubles them.
-
-    Args:
-        interaction (discord.Interaction): Discord interaction.
-        question (str): Question to receive the 8ball reading (Has no affect).
-    """
-    message = reading()
-    await interaction.response.send_message(message)
-
-@bot.tree.command(name="roll", description="Roll a number 1-6!")
-async def roll_die(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: roll\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the user a random number between 1-6.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message(f"You rolled a {rollDice.result()}!")
-
-@bot.tree.command(name="help", description="Provide assistance in using commands!")
-async def help(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: help\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Has no real purpose. Sends the user a michael scott meme.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDMydTU3N2NhNDFqZXY5a2l4amtxY3I3Z2U5c3lxc3Q3bTN6cTR0ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/8vUEXZA2me7vnuUvrs/giphy.gif")
-
-@bot.tree.command(name="meme", description="Get a current meme!")
-async def meme(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: meme\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the user a random meme from reddit.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message(fetchMeme.get_meme())
-
-@bot.tree.command(name="bored", description="Get an activity to do while bored!")
-async def bored(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: bored\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the user a random activity.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message(giveActivity.generate_activity())
-
-@bot.tree.command(name="joke", description="Get a joke!")
-async def joke(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: join\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the user a random joke.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message(fetchJoke.generate_joke())
-
-@bot.tree.command(name="qotd", description="Get the quote of the day!")
-async def qotd(inter: discord.Interaction) -> None:
-    print(f"Command used:\nUsername: {inter.user.name}\nCommand: qotd\nChannel ID: {inter.channel.id}\nChannel: {inter.channel.name}\nServer ID: {inter.guild.id}\nServer: {inter.guild.name}\n\n")
-    """
-        Sends the user the quote of the day.
-
-    Args:
-        inter (discord.Interaction): Discord interaction.
-    """
-    await inter.response.send_message(fetchQOTD.generate_qotd())
-
-@bot.event
-async def on_message_edit(before, after):
-    timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
-    footer = f"ID: {after.id} - {timestamp}"
-
-    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
-    if before.content != after.content:
-        embed=discord.Embed(title=f"Message edited in #{after.channel.name}.", color=0xFFBF00)
-        embed.set_author(name=f"{after.author.name}", url=f"https://discordlookup.com/user/{after.author.id}", icon_url=f"{after.author.avatar}")
-        embed.add_field(name="Before:", value=f"{before.content}", inline=False)
-        embed.add_field(name="After:", value=f"{after.content}", inline=False)
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
-
-@bot.event
-async def on_message_delete(message):
-    timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
-    footer = f"ID: {message.author.id} - {timestamp}"
-
-    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
-    embed=discord.Embed(title=f"Message deleted in #{message.channel.name}.", color=0xFF0000)
-    embed.set_author(name=f"{message.author.name}", url=f"https://discordlookup.com/user/{message.author.id}", icon_url=f"{message.author.avatar}")
-    embed.add_field(name="Deleted Message:", value=f"{message.content}", inline=False)
-    embed.add_field(name="Message ID:", value=f"{message.id}", inline=True)
-    embed.set_footer(text=f"{footer}")
-    await channelID.send(embed=embed)
-
-
-@bot.event
-async def on_voice_state_update(member, before, after):
-    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
-    timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
-    footer = f"ID: {member.id} - {timestamp}"
-
-    if before.channel is None:
-        embed=discord.Embed(title=f"Member joined a voice channel.", color=0x56FF00)
-        embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
-        embed.add_field(name="Channel:", value=f"{after.channel}", inline=False)
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
-    elif after.channel is None:
-        embed=discord.Embed(title=f"Member left a voice channel.", color=0xFF0000)
-        embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
-        embed.add_field(name="Channel:", value=f"{before.channel}", inline=False)
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
-    else:
-        embed=discord.Embed(title=f"Member changed voice channels.", color=0xFFBF00)
-        embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
-        embed.add_field(name="Before:", value=f"#{before.channel}", inline=False)
-        embed.add_field(name="+After:", value=f"#{after.channel}", inline=False)
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
-
-@bot.event
-async def on_member_join(member):
-    """
-        Calls welcomeImage to generate a welcome image with the users avatar, username, and server name. then sends a message to the server log.
-
-    Args:
-        member (member): Member who has joined the server.
-    """
-    channel = member.guild.system_channel
-    print(f"ATTEMPTING IMAGE: \n IMG:{member.avatar.url} \n NAME:{member.name}\n SERVER_NAME:{member.guild.name}") #Prints status to console with users avatar, username, and server name
-    file = await welcomeImage.generate_image(member.avatar.url, member.name, member.guild.name) #Calls image generator to create the image.
-    await channel.send(f"{member.mention}") #Sends a message mentioning the user.
-    await channel.send(file=file) #Sends the welcome image as a file.
-
-
-    join_position = member.guild.member_count + 1 
-    timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
-    created = member.created_at.strftime(f"%B {ordinal.get_ordinal(member.created_at.day)} %Y")
-    footer = f"ID: {member.id} - {timestamp}"
-
-    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
-    embed=discord.Embed(title="Member Joined.", color=0x56FF00)
-    embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
-    embed.add_field(name=f"{member.name} (joined {ordinal.get_ordinal(join_position)}).", value=f"Account created {created}.", inline=True)
-    embed.set_footer(text=f"{footer}")
-    await channelID.send(embed=embed)
-
-@bot.event
-async def on_member_remove(member):
-    timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
-    joined = member.joined_at.strftime(f"%B {ordinal.get_ordinal(member.joined_at.day)} %Y")
-    footer = f"ID: {member.id} - {timestamp}"
-
-    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
-    embed=discord.Embed(title="Member Left.", color=0xff0000)
-    embed.set_author(name=f"{member.name}", url=f"https://discordlookup.com/user/{member.id}", icon_url=f"{member.avatar}")
-    embed.add_field(name=f"{member.name} joined on {joined}.", value=f"", inline=True)
-    embed.set_footer(text=f"{footer}")
-    await channelID.send(embed=embed)
-
-@bot.event
-async def on_user_update(before, after):
-    print(f"NAME: {before.name}, {after.name}")
-    print(f"GLOBAL: {before.global_name}, {after.global_name}")
-    timestamp = datetime.datetime.now().strftime(f"%A, %B {ordinal.get_ordinal(datetime.datetime.now().day)} %Y, at %I:%M %p")
-    footer = f"ID: {after.id} - {timestamp}"
-
-
-    channelID = bot.get_channel(int(LOG_CHANNEL_ID))
-    if before.name != after.name:
-        embed=discord.Embed(title="Member Name Update.", color=0xFF00EF)
-        embed.set_author(name=f"{before.name}", url=f"https://discordlookup.com/user/{after.id}", icon_url=f"{before.avatar}")
-        embed.add_field(name=f"Before:", value=f"{before.name}", inline=False)
-        embed.add_field(name=f"+ After:", value=f"{after.name}", inline=False)
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
+    logger.info("-" * 30)
     
-    elif before.global_name != after.global_name:
-        embed=discord.Embed(title="Member Global Name Update.", color=0xFF00EF)
-        embed.set_author(name=f"{before.name}", url=f"https://discordlookup.com/user/{after.id}", icon_url=f"{before.avatar}")
-        embed.add_field(name=f"Before:", value=f"{before.global_name}", inline=False)
-        embed.add_field(name=f"+ After:", value=f"{after.global_name}", inline=False)
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
+# --- Event Listeners for Server Activity (Example - Move to Cog) ---
+# These should ideally be in their own Cog (e.g., 'cogs/server_events_cog.py')
+# and use the LOG_CHANNEL_ID for sending messages to Discord, NOT the standard logger.
 
-    else:
-        embed=discord.Embed(title="Avatar Update.", color=0xFF00EF)
-        embed.set_thumbnail(url=f"{after.avatar}")
-        embed.set_author(name=f"{before.name}", url=f"https://discordlookup.com/user/{after.id}", icon_url=f"{before.avatar}")
-        embed.set_footer(text=f"{footer}")
-        await channelID.send(embed=embed)
+# --- Main Execution Block ---
+async def main():
+    """Main asynchronous function to load cogs and start the bot."""
+    # Use bot as an async context manager for proper setup/teardown
+    async with bot:
+        # Load all extensions (Cogs) before starting the connection
+        await load_cogs() 
+        
+        logger.info("Attempting to connect to Discord...")
+        # Start the bot's connection to Discord using the token
+        await bot.start(DISCORD_BOT_TOKEN)
 
-
-bot.run(DISCORD_BOT_TOKEN)
+if __name__ == "__main__":
+    # This block runs when the script is executed directly
+    try:
+        # Run the main asynchronous function
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        # Graceful shutdown on Ctrl+C
+        logger.info("Received KeyboardInterrupt. Initiating shutdown...")
+        # asyncio tasks are typically cancelled automatically by asyncio.run() on exit
+    except discord.LoginFailure:
+        # Specific error for bad tokens (already logged critical, but catch again)
+        logger.critical("Login Failure: The provided DISCORD_BOT_TOKEN is invalid or expired.")
+    except Exception as e:
+        # Catch any other unexpected errors during startup or runtime
+        # Using critical because this is an uncaught exception at the highest level
+        logger.critical(f"An unexpected error occurred outside the main bot loop: {e}", exc_info=True) 
+    finally:
+        # This will run after the bot stops, whether normally or due to an error
+        logger.info("Bot process has finished.")
+        # Ensure logs are flushed before exiting (though usually handled by handlers)
+        logging.shutdown() 
