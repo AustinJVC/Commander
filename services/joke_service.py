@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+#Makes the API request.
 def _make_request(url: str, params: dict = None) -> dict | None:
     try:
         response = requests.get(url, params=params, timeout=10)
@@ -17,8 +18,7 @@ def _make_request(url: str, params: dict = None) -> dict | None:
         return None
 
 def get_joke() -> str | None:
-    """Fetches a joke from JokeAPI."""
-    # Using 'Any' category but blacklisting flags for safety
+    # I've decided to blacklist racist and sexist jokes because this is going on github. If you're reading this, racist and sexist jokes are BAD!!!!!!! 
     url = "https://v2.jokeapi.dev/joke/Any"
     params = {
         'blacklistFlags': 'racist,sexist',

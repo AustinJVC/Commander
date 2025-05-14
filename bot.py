@@ -1,109 +1,91 @@
-# External Imports
+#Importing
 import discord
-# from discord import app_commands # Not strictly needed if all commands are in Cogs
 from discord.ext import commands
-# import datetime # Not used directly here anymore
 from dotenv import load_dotenv
 import os
 import asyncio
-import logging # Import logging module
-# No longer need logging.handlers or sys
+import logging
 
-# --- Simplified Logging Setup (File Only) ---
-# Configure logging to output INFO level messages and higher directly to a file.
-# This is called ONCE when the script starts.
+# Set logging directories & files. Ensure they exist, if they don't exist, create them. Set the configuration for logging.
 log_directory = "logs"
 log_file_path = os.path.join(log_directory, "discord_bot.log")
 
-# Ensure the log directory exists
 if not os.path.exists(log_directory):
     try:
         os.makedirs(log_directory)
     except OSError as e:
-        # Use print for critical setup errors before logging is fully configured
-        print(f"CRITICAL: Could not create log directory '{log_directory}'. Logging disabled. Error: {e}", file=sys.stderr) 
-        # Exit or disable logging features if the directory is essential
-        exit(1) 
+        print(f"CRITICAL: Could not create log directory '{log_directory}'. Logging disabled. Error: {e}") 
+        exit(1)
 
 logging.basicConfig(
-    level=logging.INFO,  # Set the minimum level to log (INFO, WARNING, ERROR, CRITICAL)
-    format='%(asctime)s [%(levelname)-8s] [%(name)-15s]: %(message)s', # Log message format
-    datefmt='%Y-%m-%d %H:%M:%S', # Timestamp format
-    filename=log_file_path, # <<< Direct logs to this file
-    filemode='a', # 'a' for append (default), 'w' for overwrite each time
-    encoding='utf-8', # Explicitly set encoding
-    force=True # Use force=True to allow reconfiguration if basicConfig was called before (e.g., by a library)
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)-8s] [%(name)-15s]: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    filename=log_file_path,
+    filemode='a',
+    encoding='utf-8',
+    force=True
 )
 
-# --- Optional: Set discord.py's internal logger level ---
-# If you want discord.py logs in the file, ensure its level is >= INFO
-# If you want FEWER discord.py logs, set its level higher (e.g., WARNING)
 logging.getLogger('discord').setLevel(logging.INFO) 
 logging.getLogger('discord.http').setLevel(logging.WARNING)
 
-# --- Get a logger instance for THIS file (bot.py) ---
-# Best practice: use __name__ for the logger name (will be '__main__' when run directly)
 logger = logging.getLogger(__name__) 
 
-# --- Load Environment Variables ---
+# Load environment variables for customization. 
 load_dotenv()
-logger.info("Loading environment variables from .env file...") # This will go to the file
+logger.info("Loading environment variables from .env file...")
 
+#Set the discord bot token. If there isn't a token, exit the program. 
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 if DISCORD_BOT_TOKEN is None:
-    # Use CRITICAL for errors that prevent the bot from starting
     logger.critical("CRITICAL: DISCORD_BOT_TOKEN not found in .env file. Bot cannot start.")
-    exit(1) # Exit if the token is missing
+    exit(1)
 
-DISCORD_BOT_STATUS = os.getenv('DISCORD_BOT_STATUS', "Watching things!") # Provide a default status
+# Set the discord bot status. If there isn't a status set, use the default status of "Watching you stay inside!" 
+DISCORD_BOT_STATUS = os.getenv('DISCORD_BOT_STATUS', "you stay inside!")
 logger.info(f"Bot status set to: '{DISCORD_BOT_STATUS}'")
 
-# --- API Key Checks (Example) ---
-# Log warnings for potentially missing optional keys needed by Cogs
+# Set the weather API key. If there isn't a key, log it and move on.
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
 if WEATHER_API_KEY is None:
-    # This is just an informational warning here; the Cog using it should handle the absence properly.
     logger.warning("WEATHER_API_KEY not found in .env file. Weather-related commands may not function.")
-# Add similar checks/warnings for other optional API keys if needed
 
-# Note: LOG_CHANNEL_ID is intentionally NOT checked/logged here, 
-# as it's for server activity logging, presumably handled within a specific Cog/event listener.
+# Set up the discord bot, set intents.
+logger.debug("Setting up Discord intents...")
 
-# --- Bot Initialization ---
-logger.debug("Setting up Discord intents...") # DEBUG messages won't show with level=INFO
 intents = discord.Intents.default()
-intents.message_content = True # Required for message content related events (if any)
-intents.members = True         # Required for member join/update events (if any)
-intents.voice_states = True    # Required for voice state events (if any)
+intents.message_content = True
+intents.members = True
+intents.voice_states = True
 
-logger.info("Initializing commands.Bot instance...") # INFO messages will show
-# Using commands.Bot allows for Cogs and potentially prefix commands (though focusing on slash)
+logger.info("Initializing commands.Bot instance...")
+
 bot = commands.Bot(command_prefix="!", intents=intents) 
 
-# --- Cog Loading ---
+# Load all cogs which are used for bot functionality.
 async def load_cogs():
-    """Finds and loads all Python files as cogs from the 'cogs' directory."""
     cogs_path = 'cogs'
     logger.info("-" * 20)
     logger.info(f"Attempting to load cogs from directory: '{cogs_path}'...")
     loaded_cogs_count = 0
     failed_cogs_count = 0
     
+    #Check if the cogs directory is there
     if not os.path.isdir(cogs_path):
         logger.warning(f"Cogs directory '{cogs_path}' not found. Skipping Cog loading.")
         return
-
+    
+    #For each cog in the directory, load it.
     for filename in os.listdir(cogs_path):
-        # Standard check: Python file, not __init__, not hidden/temporary
         if filename.endswith('.py') and filename != '__init__.py' and not filename.startswith(('.', '_')):
             cog_module_name = f"{cogs_path}.{filename[:-3]}" # Format like 'cogs.utility_cog'
             try:
-                # The core command to load an extension (Cog)
                 await bot.load_extension(cog_module_name)
                 logger.info(f"  [OK] Successfully loaded cog: {cog_module_name}")
                 loaded_cogs_count += 1
             except commands.ExtensionAlreadyLoaded:
-                 logger.warning(f"  [!] Cog already loaded: {cog_module_name}") # Should be rare if loaded once
+                 logger.warning(f"  [!] Cog already loaded: {cog_module_name}")
             except commands.ExtensionNotFound:
                  logger.error(f"  [FAIL] Cog module not found: {cog_module_name}")
                  failed_cogs_count += 1
@@ -111,24 +93,20 @@ async def load_cogs():
                  logger.error(f"  [FAIL] Cog '{cog_module_name}' has no setup() function.")
                  failed_cogs_count += 1
             except commands.ExtensionFailed as e:
-                 # Log the original error that occurred within the Cog's setup
                  logger.error(f"  [FAIL] Cog '{cog_module_name}' setup failed: {e.original}", exc_info=True) 
                  failed_cogs_count += 1
             except Exception as e:
-                # Catch any other unexpected errors during loading
                 logger.error(f"  [FAIL] Failed to load cog {cog_module_name}: {type(e).__name__} - {e}", exc_info=True) 
                 failed_cogs_count += 1
                 
     logger.info(f"Cog loading process complete. Loaded: {loaded_cogs_count}, Failed: {failed_cogs_count}")
     logger.info("-" * 20)
 
-# --- Bot Events ---
+# The big boy himself, this is it. The big shabang! 
 @bot.event
 async def on_ready():
-    """
-    Called once the bot is fully connected and ready. 
-    Syncs application commands and sets the bot's presence.
-    """
+    
+    # Logs the bot info, including the bot name, how many servers it's connected to, and discord version.
     logger.info("-" * 30)
     logger.info(f"Logged in as: {bot.user.name} (ID: {bot.user.id})")
     logger.info(f"Connected to {len(bot.guilds)} guild(s).")
@@ -136,10 +114,9 @@ async def on_ready():
     logger.info("Bot is ready and online.")
     logger.info("-" * 30)
 
-    # --- Sync Application Commands ---
+    # Sync commands to discord, very very important :) 
     logger.info("Attempting to sync application (slash) commands globally...")
     try:
-        # Sync commands registered via Cogs or directly in bot.py
         synced_commands = await bot.tree.sync() 
         logger.info(f"Successfully synced {len(synced_commands)} application commands globally.")
     except discord.errors.Forbidden:
@@ -147,7 +124,7 @@ async def on_ready():
     except Exception as e:
         logger.error(f"Failed to sync application commands: {e}", exc_info=True) 
     
-    # --- Set Bot Presence ---
+    # Change the discord status of the bot, or as the cool kids call it, "presence" 
     logger.info(f"Setting bot presence to 'Watching {DISCORD_BOT_STATUS}'...")
     try:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(DISCORD_BOT_STATUS)))
@@ -156,25 +133,17 @@ async def on_ready():
         logger.error(f"Failed to set bot presence: {e}", exc_info=True)
 
     logger.info("-" * 30)
-    
-# --- Event Listeners for Server Activity (Example - Move to Cog) ---
-# These should ideally be in their own Cog (e.g., 'cogs/server_events_cog.py')
-# and use the LOG_CHANNEL_ID for sending messages to Discord, NOT the standard logger.
 
-# --- Main Execution Block ---
+# Our main function, some may call this the boss since all it does is delegate.
 async def main():
-    """Main asynchronous function to load cogs and start the bot."""
-    # Use bot as an async context manager for proper setup/teardown
     async with bot:
-        # Load all extensions (Cogs) before starting the connection
         await load_cogs() 
         
         logger.info("Attempting to connect to Discord...")
-        # Start the bot's connection to Discord using the token
         await bot.start(DISCORD_BOT_TOKEN)
 
+# This part is purely AI because although we aren't vibe coders, we definitely didn't wanna spend the time learning asyncio.  
 if __name__ == "__main__":
-    # This block runs when the script is executed directly
     try:
         # Run the main asynchronous function
         asyncio.run(main())

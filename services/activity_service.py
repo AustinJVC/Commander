@@ -1,11 +1,10 @@
-# services/activity_service.py
 import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
+#Makes the API request.
 def _make_request(url: str) -> dict | None:
-    """Helper to make requests and handle basic errors."""
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -19,7 +18,7 @@ def _make_request(url: str) -> dict | None:
         return None
 
 def get_activity() -> str | None:
-    """Fetches a random activity from the Bored API."""
+    #Fetches a random activity from the Bored API.
     url = "https://bored-api.appbrewery.com/random"
     logger.debug(f"Requesting activity from {url}")
     data = _make_request(url)

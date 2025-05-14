@@ -1,15 +1,13 @@
-# services/qotd_service.py
 import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
-def _make_request(url: str) -> list | None: # Note: ZenQuotes returns a list
-    """Helper to make requests and handle basic errors."""
+#Makes the API request.
+def _make_request(url: str) -> list | None:
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        # ZenQuotes API might return text/html on error, check content type
         if 'application/json' in response.headers.get('Content-Type', ''):
             return response.json()
         else:
@@ -25,11 +23,10 @@ def get_qotd() -> str | None:
     logger.debug(f"Requesting QOTD from {url}")
     data = _make_request(url)
 
-    # API returns a list containing one dictionary
     if data and isinstance(data, list) and len(data) > 0 and 'q' in data[0] and 'a' in data[0]:
         quote = data[0]['q']
         author = data[0]['a']
-        formatted_quote = f"> {quote}\n> \n> *- {author}*" # Format using blockquote markdown
+        formatted_quote = f"> {quote}\n> \n> *- {author}*"
         logger.info(f"Successfully fetched QOTD by {author}")
         return formatted_quote
     else:

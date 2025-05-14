@@ -1,12 +1,11 @@
-# services/cocktail_service.py
 import discord
 import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
+#Makes the API request.
 def _make_request(url: str) -> dict | None:
-    """Helper to make requests and handle basic errors."""
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -20,7 +19,7 @@ def _make_request(url: str) -> dict | None:
         return None
 
 def get_cocktail_embed() -> discord.Embed | None:
-    """Fetches a random cocktail and formats it into an embed."""
+    #Fetches a random cocktail and formats it into an embed.
     url = "https://www.thecocktaildb.com/api/json/v1/1/random.php"
     logger.debug(f"Requesting cocktail from {url}")
     data = _make_request(url)
@@ -37,7 +36,7 @@ def get_cocktail_embed() -> discord.Embed | None:
         image_url = drink.get('strDrinkThumb')
 
         ingredients = []
-        for i in range(1, 16): # API supports up to 15 ingredients
+        for i in range(1, 16):
             ingredient = drink.get(f'strIngredient{i}')
             measure = drink.get(f'strMeasure{i}')
             if ingredient:
@@ -49,7 +48,6 @@ def get_cocktail_embed() -> discord.Embed | None:
         
         if not ingredients:
              logger.warning(f"Cocktail '{name}' fetched with no ingredients.")
-             # Not retrying here to avoid potential loops, just showing what we got
 
         embed = discord.Embed(
             title=name.title(),

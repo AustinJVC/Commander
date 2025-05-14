@@ -21,12 +21,12 @@ class FunCog(commands.Cog):
         self.bot = bot
         logger.info("FunCog initialized.")
 
-    # --- Cocktail Command ---
+    # Our cocktail command because i know a lot of alcoholics
     @app_commands.command(name="cocktail", description="Get a random cocktail suggestion.")
     async def cocktail(self, interaction: discord.Interaction):
         """Sends a random cocktail recipe."""
         logger.info(f"Cocktail command triggered by {interaction.user.name}")
-        await interaction.response.defer() # Defer response as API call can take time
+        await interaction.response.defer() 
         
         cocktail_embed = get_cocktail_embed()
         
@@ -36,7 +36,7 @@ class FunCog(commands.Cog):
             logger.error("Failed to get cocktail embed from service.")
             await interaction.followup.send("Sorry, I couldn't mix a cocktail suggestion right now. Please try again later.", ephemeral=True)
 
-    # --- Eightball Command ---
+    # Eightball command because jesus take the wheel
     @app_commands.command(name="eightball", description="Ask the magic 8-ball a question!")
     @app_commands.describe(question="The yes/no question you want to ask.")
     async def eightball(self, interaction: discord.Interaction, question: str):
@@ -47,13 +47,12 @@ class FunCog(commands.Cog):
         reading = get_eightball_reading()
         
         if reading:
-            # Simple response format
             await interaction.followup.send(f"You asked: \"{question}\"\nThe Magic 8-Ball says: **{reading}**")
         else:
             logger.error("Failed to get 8ball reading from service.")
             await interaction.followup.send("Sorry, the Magic 8-Ball seems cloudy right now. Please try again later.", ephemeral=True)
 
-    # --- Joke Command ---
+    # Joke command because we still haven't found a better joke than your life. 
     @app_commands.command(name="joke", description="Get a random SFW joke.")
     async def joke(self, interaction: discord.Interaction):
         """Sends a random joke."""
@@ -68,7 +67,7 @@ class FunCog(commands.Cog):
             logger.error("Failed to get joke from service.")
             await interaction.followup.send("Sorry, I couldn't think of a joke right now. Please try again later.", ephemeral=True)
 
-    # --- Meme Command ---
+    # A meme command... well, just because
     @app_commands.command(name="meme", description="Get a random SFW meme.")
     async def meme(self, interaction: discord.Interaction):
         """Sends a random meme URL."""
@@ -83,7 +82,7 @@ class FunCog(commands.Cog):
             logger.error("Failed to get meme URL from service.")
             await interaction.followup.send("Sorry, the meme stash is empty right now. Please try again later.", ephemeral=True)
 
-    # --- Quote of the Day Command ---
+    # QOTD Command because everyone needs a little inspiration
     @app_commands.command(name="qotd", description="Get the quote of the day.")
     async def qotd(self, interaction: discord.Interaction):
         """Sends the quote of the day."""
@@ -98,7 +97,7 @@ class FunCog(commands.Cog):
             logger.error("Failed to get QOTD from service.")
             await interaction.followup.send("Sorry, I couldn't find the quote of the day. Please try again later.", ephemeral=True)
 
-    # --- Bored/Activity Command ---
+    # A bored command because someone needs a reminder to clean out their fridge
     @app_commands.command(name="bored", description="Get a random activity suggestion.")
     async def bored(self, interaction: discord.Interaction):
         """Suggests a random activity."""
@@ -114,7 +113,7 @@ class FunCog(commands.Cog):
             await interaction.followup.send("Sorry, I'm out of ideas right now. Maybe browse Reddit?", ephemeral=True)
 
 
-# Setup function required by discord.py to load the Cog
+# setup function which loads the cog as required.
 async def setup(bot: commands.Bot):
     """Adds the FunCog to the bot."""
     await bot.add_cog(FunCog(bot))

@@ -1,11 +1,10 @@
-# services/eightball_service.py
 import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
+#Makes the API request.
 def _make_request(url: str, params: dict = None) -> dict | None:
-    """Helper to make requests and handle basic errors."""
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -19,9 +18,8 @@ def _make_request(url: str, params: dict = None) -> dict | None:
         return None
 
 def get_eightball_reading() -> str | None:
-    """Fetches a reading from the eightball API."""
     url = "https://eightballapi.com/api"
-    # The API seems to require a question, even if ignored for random reading
+    # The API requires a question, but because I don't know what they do with the questions, we are just putting a placeholder in. And lucky because false confidence works. 
     params = {'question': 'Will I succeed?', 'lucky': 'true'} 
     logger.debug(f"Requesting 8ball reading from {url}")
     data = _make_request(url, params=params)

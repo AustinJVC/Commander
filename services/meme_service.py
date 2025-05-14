@@ -1,11 +1,10 @@
-# services/meme_service.py
 import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
+#Makes the API request.
 def _make_request(url: str) -> dict | None:
-    """Helper to make requests and handle basic errors."""
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -19,13 +18,12 @@ def _make_request(url: str) -> dict | None:
         return None
 
 def get_meme_url() -> str | None:
-    """Fetches a random meme URL from meme-api."""
-    # Consider specifying a subreddit if desired: url = "https://meme-api.com/gimme/wholesomememes"
+
     url = "https://meme-api.com/gimme" 
     logger.debug(f"Requesting meme from {url}")
     data = _make_request(url)
 
-    # Check for essential keys and ensure NSFW is false (if API provides it)
+    # Just like with the joke API, we block NSFW memes because we don't like NSFW memes and this is on github. Also because this grabs memes from reddit and I'm scared what could potentially come from there.
     if data and 'url' in data and data.get('nsfw') is False:
         meme_url = data['url']
         title = data.get('title', 'Meme')
@@ -33,7 +31,6 @@ def get_meme_url() -> str | None:
         return meme_url
     elif data and data.get('nsfw') is True:
         logger.warning(f"Meme API returned NSFW content, skipping. Data: {data}")
-        # Optionally retry here, but be careful about loops
         return None 
     else:
         logger.error(f"Failed to fetch or parse meme URL. Data: {data}")
