@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import asyncio
 import logging
+from services.send_metrics import send_metrics
 
 # Set logging directories & files. Ensure they exist, if they don't exist, create them. Set the configuration for logging.
 log_directory = "logs"
@@ -50,6 +51,16 @@ logger.info(f"Bot status set to: '{DISCORD_BOT_STATUS}'")
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
 if WEATHER_API_KEY is None:
     logger.warning("WEATHER_API_KEY not found in .env file. Weather-related commands may not function.")
+
+SLOWSTATS_COMMANDER_API_KEY = os.getenv('SLOWSTATS_COMMANDER_API_KEY')
+if SLOWSTATS_COMMANDER_API_KEY is None:
+    logger.warning("SLOWSTATS_COMMANDER_API_KEY not found in .env file. SlowStats related commands may not function.")
+
+SLOWSTATS_COMMANDER_PROJECT_ID = os.getenv('SLOWSTATS_COMMANDER_PROJECT_ID')
+if SLOWSTATS_COMMANDER_PROJECT_ID is None:
+    logger.warning("SLOWSTATS_COMMANDER_PROJECT_ID not found in .env file. SlowStats related commands may not function.")
+
+
 
 # Set up the discord bot, set intents.
 logger.debug("Setting up Discord intents...")
@@ -113,6 +124,16 @@ async def on_ready():
     logger.info(f"Using discord.py version: {discord.__version__}")
     logger.info("Bot is ready and online.")
     logger.info("-" * 30)
+
+    total_guilds = len(bot.guilds)
+    total_members = sum(g.member_count for g in bot.guilds if g.member_count)
+
+    send_metrics({
+        "total_servers": total_guilds,
+        "total_members": total_members
+    })
+
+    logger.info("Sent metrics to SlowStats.")
 
     # Sync commands to discord, very very important :) 
     logger.info("Attempting to sync application (slash) commands globally...")

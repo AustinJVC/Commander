@@ -22,7 +22,7 @@ def get_activity() -> str | None:
     url = "https://bored-api.appbrewery.com/random"
     logger.debug(f"Requesting activity from {url}")
     data = _make_request(url)
-
+    
     if data and 'activity' in data:
         activity = data['activity']
         logger.info(f"Successfully fetched activity: {activity}")

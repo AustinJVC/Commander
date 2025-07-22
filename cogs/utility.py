@@ -3,10 +3,10 @@ from discord import app_commands
 from discord.ext import commands
 import os
 import logging
+from services.send_event import send_event
 
 logger = logging.getLogger(__name__)
 
-# try to import the weather command
 try:
     from services.weather_service import get_weather_embed
 except ImportError:
@@ -30,7 +30,6 @@ class UtilityCog(commands.Cog, name="Utility"):
             bot (commands.Bot): The instance of the Discord bot.
         """
 
-        #Get the API key
         self.bot = bot
         self.weather_api_key = os.getenv('WEATHER_API_KEY') 
         if not self.weather_api_key:
@@ -58,6 +57,21 @@ class UtilityCog(commands.Cog, name="Utility"):
             logger.error(f"Weather command failed: API key is missing. User: {interaction.user}")
             await interaction.followup.send("Sorry, the weather service is not configured correctly (missing API key). Please contact the server owner.", ephemeral=True)
             return
+
+        # Send event to theslow.net
+        send_event(
+            event_type="weather_command_used",
+            description="A user used the /weather command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /weather",
+            webhook_description= "I hope it's sunny and warm for them! ☀️"
+        )
 
         try:
             weather_embed = get_weather_embed(city, self.weather_api_key)
