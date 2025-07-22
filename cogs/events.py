@@ -4,6 +4,7 @@ from discord.ext import commands
 import datetime
 import os
 import logging
+from services.send_event import send_event
 
 #We need ordinals for logging, because "May 1st" is better than "May 1".
 def get_ordinal(n):
@@ -108,6 +109,21 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
         member_avatar_url = interaction.user.display_avatar.url
         member_name = interaction.user.display_name
         server_name = interaction.guild.name
+
+        # Send event to theslow.net
+        send_event(
+            event_type="testwelcome_command_used",
+            description="A user used the /test_welcome command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /test_welcome",
+            webhook_description= "They didn't have enough friends to see it in action, had to test it all alone... 🕴️"
+        )
 
         try:
             welcome_file = await generate_image(member_avatar_url, member_name, server_name)
@@ -251,6 +267,20 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
         if member.bot:
             return
 
+        send_event(
+            event_type="user_joined_commander_server",
+            description="A user just joined a commander server.",
+            payload={
+                "user_id": str(member.id),  # safe to log internally
+                "username": member.name,
+                "guild_id": str(member.guild.id) if member.guild.id else "DM",
+                "member_displayname": str(member.display_name),
+            },
+            color=0x8c00ff,
+            webhook_title="A user joined a Commander server",
+            webhook_description= "Look at that, the commander user base is growing. 🌱"
+        )
+
         #Yippeee! Image generation. Check if it's available.
         if WELCOME_SERVICE_AVAILABLE:
             system_channel = member.guild.system_channel
@@ -311,7 +341,7 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
         logger.info(f"Logged member join: {author_name} to {member.guild.name}")
 
 
-    # This listens for musers leaving.
+    # This listens for users leaving.
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
         if member.bot or not self.log_channel_id:
@@ -347,6 +377,20 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
         embed.set_thumbnail(url=author_icon)
         embed.set_footer(text=footer)
         
+        send_event(
+            event_type="user_left_commander_server",
+            description="A user just left a commander server.",
+            payload={
+                "user_id": str(member.id),  # safe to log internally
+                "username": member.name,
+                "guild_id": str(member.guild.id) if member.guild.id else "DM",
+                "member_displayname": str(member.display_name),
+            },
+            color=0x8c00ff,
+            webhook_title="A user left a Commander server",
+            webhook_description= "Look at that, the commander user base is... dying 🥀"
+        )
+
         await self._send_log_embed(embed)
         logger.info(f"Logged member leave: {author_name} from {member.guild.name}")
 

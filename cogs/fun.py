@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import logging
+from services.send_event import send_event
 from services.cocktail_service import get_cocktail_embed
 from services.eightball_service import get_eightball_reading
 from services.joke_service import get_joke
@@ -30,6 +31,21 @@ class FunCog(commands.Cog):
         
         cocktail_embed = get_cocktail_embed()
         
+        # Send event to theslow.net
+        send_event(
+            event_type="cocktail_command_used",
+            description="A user used the /cocktail command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /cocktail",
+            webhook_description= "Someone’s feeling thirsty. 🍸"
+        )
+
         if cocktail_embed:
             await interaction.followup.send(embed=cocktail_embed)
         else:
@@ -46,6 +62,21 @@ class FunCog(commands.Cog):
         
         reading = get_eightball_reading()
         
+        # Send event to theslow.net
+        send_event(
+            event_type="eightball_command_used",
+            description="A user used the /eightball command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /eightball",
+            webhook_description= "Someone’s lacking the confidence to make their own decisions. 🎱"
+        )
+
         if reading:
             await interaction.followup.send(f"You asked: \"{question}\"\nThe Magic 8-Ball says: **{reading}**")
         else:
@@ -61,6 +92,21 @@ class FunCog(commands.Cog):
         
         joke_text = get_joke()
         
+        # Send event to theslow.net
+        send_event(
+            event_type="joke_command_used",
+            description="A user used the /joke command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /joke",
+            webhook_description= "Someone’s not funny enough to impress their crush, hope I helped. 🤣"
+        )
+
         if joke_text:
             await interaction.followup.send(joke_text)
         else:
@@ -75,6 +121,21 @@ class FunCog(commands.Cog):
         await interaction.response.defer()
         
         meme_url = get_meme_url()
+
+        # Send event to theslow.net
+        send_event(
+            event_type="meme_command_used",
+            description="A user used the /meme command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /meme",
+            webhook_description= "Hopefully my response was appropriate. 😅"
+        )
         
         if meme_url:
             await interaction.followup.send(meme_url)
@@ -90,6 +151,21 @@ class FunCog(commands.Cog):
         await interaction.response.defer()
         
         quote = get_qotd()
+
+        # Send event to theslow.net
+        send_event(
+            event_type="qotd_command_used",
+            description="A user used the /qotd command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /qotd",
+            webhook_description= "They needed some inspiration! 💪"
+        )
         
         if quote:
             await interaction.followup.send(quote)
@@ -105,6 +181,21 @@ class FunCog(commands.Cog):
         await interaction.response.defer()
         
         activity = get_activity()
+
+        # Send event to theslow.net
+        send_event(
+            event_type="bored_command_used",
+            description="A user used the /bored command.",
+            payload={
+                "user_id": str(interaction.user.id),  # safe to log internally
+                "username": interaction.user.name,
+                "guild_id": str(interaction.guild_id) if interaction.guild_id else "DM",
+                "channel_id": str(interaction.channel_id),
+            },
+            color=0x8c00ff,
+            webhook_title="A user used /bored",
+            webhook_description= "Hoooooly someone is bored... 🤡 "
+        )
         
         if activity:
             await interaction.followup.send(f"Feeling bored? Why not try this:\n**{activity}**")
