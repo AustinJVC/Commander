@@ -1,188 +1,149 @@
-# Commander - Discord Bot
-## About Commander
+# Commander Bot 🤖
 
-Commander is a Discord bot created as a personal project during the summer of 2023. It is currently under (somewhat) active development and intended to be a fun and helpful addition to your Discord server.  
+Commander is a feature-rich, event-driven Discord bot built with `discord.py` and designed to enhance your server experience with utility tools, fun interactions, welcome images, server logging, and external API integrations. It’s modular, stat-tracked, and production-ready for communities that want both personality and polish.
 
-Commander currently offers features such as music playback, welcome image generation, various entertainment functionalities, and logging. However, it's important to note that it is still in its very early stages. Please expect potential bugs and limitations as development progresses.  
+---
 
-I welcome feedback and suggestions as I continue to enhance Commander's capabilities. Feel free to reach out through email.
+## 🔧 Features
 
-## Quick Start
+| Category    | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| Fun         | `/joke`, `/meme`, `/cocktail`, `/eightball`, `/bored`, `/qotd`              |
+| Utility     | `/weather` command with rich embeds and error handling                      |
+| Events      | Welcome messages, message edit/delete logs, voice channel tracking          |
+| Visuals     | Dynamic welcome images with user avatars and server branding                |
+| Analytics   | SlowStats integration for usage metrics and event tracking                  |
+| Modular     | Extensible `cogs/` architecture, clean service separation, async compatible |
 
-### Download
+---
 
-Download the Files: Download the bot files onto the system you'll use to host your bot. Many Discord bot hosting services offer a convenient option to automatically pull your files directly from a GitHub repository. This eliminates the need for manual downloading, which we won't cover in this guide as it's a common process.
-
-### Setup
-
-Configuration Required: Once you have downloaded the files, attempting to run the bot directly will likely result in errors. This is because the program requires some configuration adjustments before it can function properly.
-
-#### Directory Changes
-
-Here's a breakdown of the specific directories within the bot's code that you might need to modify:
-
-1. **Config** (bot.py, Line 17): This directory points to your config.txt file. We'll create this file in the next step. Update this path to reflect where you'll store your configuration file.  
-2. **Background Images (welcomeImage.py, Line 24)**: This directory points to the location of your background images used for welcome messages. These images should be stored in a subfolder named res/welcomeImages. Update this path to match your image location.  
-
-*FYI, if you're using the music branch of this code, please be aware that this code is not kept up-to-date and may no longer work. Setting up music playback requires additional configuration beyond the scope of this guide. Music commands are still showcased in the features section.*
-
-#### Config
-
-We need to create a config file to unlock Commander's full capability. By default I've loaded this file as `/bot/config.txt`, but you can put it wherever as long as you updated the directory. The config file has this format:
+## 📦 Project Structure
 
 ```
-BOT_TOKEN=your_token_here
-BOT_STATUS=your_bot_status
-LOG_CHANNEL_ID=log_channel_ID
-WEATHER_API=your_weather_api_key
+.
+├── bot.py                # Entrypoint and main event loop
+├── cogs/                 # Discord cogs for commands and listeners
+│   ├── fun.py
+│   ├── utility.py
+│   └── events.py
+├── services/             # Modular service layer (APIs, embeds, etc.)
+│   ├── activity_service.py
+│   ├── cocktail_service.py
+│   ├── eightball_service.py
+│   ├── joke_service.py
+│   ├── meme_service.py
+│   ├── qotd_service.py
+│   ├── weather_service.py
+│   ├── welcome_service.py
+│   ├── send_event.py
+│   └── send_metrics.py
+├── res/welcomeMessages/  # Welcome image backgrounds
+├── logs/                # Rotating log files
+└── .env                 # Environment configuration
 ```
 
-- BOT_TOKEN: Your bot token.
-- BOT_STATUS: The status you want on your bot. It will display as "Watching {your_bot_status}"
+---
 
-- LOG_CHANNEL_ID: The channel ID of the logging chat in your server. Commander will automatically send logging information to this channel. Please make sure Commander has access to this channel. 
+## ⚙️ Setup & Installation
 
-### Run Script
-Boom! You're done. Run the script and everything should work as intended. Send me an email and I'll help you out if that isn't the case.
+### 1. Install dependencies
+```bash
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
 
+### 2. Environment Variables (`.env`)
+```
+DISCORD_BOT_TOKEN=your_discord_token_here
+DISCORD_BOT_STATUS=watching you stay inside!
+WEATHER_API_KEY=your_openweathermap_api_key
+LOG_CHANNEL_ID=123456789012345678
+SLOWSTATS_COMMANDER_API_KEY=your_slowstats_api_key
+SLOWSTATS_COMMANDER_PROJECT_ID=your_slowstats_project_id
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+```
 
-## Features:
+### 3. Launch the bot
+```bash
+python bot.py
+```
 
-### Music Player:
-Commander allows you to play audio from YouTube links directly in voice channels. This feature requires a dedicated system and the installation of ffmpeg libraries on the host machine. Once set up, you can submit YouTube links to Commander, and it will:  
+The bot will log all runtime activity to `logs/discord_bot.log`.
 
-1. Download the audio from the YouTube link as an MP3 file.
-2. Save the MP3 file locally.
-3. Play the MP3 file in the current voice channel.
+---
 
-**Important Note:**
+## 🧠 Commands
 
-- This feature works, but is currently in an experimental stage and has only been tested locally. A separate branch has been created with music functionality, but it is no longer updated.
-- You might need to adjust the code to specify the correct directory location for your ffmpeg installation.
+| Command       | Description                                      |
+|---------------|--------------------------------------------------|
+| `/cocktail`   | Returns a random cocktail recipe                 |
+| `/eightball`  | Ask a yes/no question and get a magic response   |
+| `/joke`       | Fetches a safe-for-work joke                     |
+| `/meme`       | Retrieves a SFW meme from Reddit                 |
+| `/qotd`       | Quote of the day from ZenQuotes                  |
+| `/bored`      | Activity suggestions from the Bored API          |
+| `/weather`    | Current weather data for a city                  |
+| `/test_welcome` | Preview your own welcome image                |
 
-#### Music Commands:
-!join - Joins the voice channel the member is currently in. Commander will respond if the member is not in a voice channel.  
-!leave - Leaves the voice channel Commander is currently in.  
-!pause - Pauses the audio file currently playing until asked to resume.  
-!resume - Resumes the audio file that has been paused.  
-!stop - Stops the audio file and dequeues it.  
-!play [LINK] - Joins the voice channel the member is currently in and plays the requested YouTube video.   
+---
 
-### Image Manipulation: 
+## 📊 Metrics & Event Tracking
 
-Commander automatically creates and sends a personalized welcome image to the #announcements channel when someone joins your Discord server. This image features:
+All command usage and key events (e.g., joins/leaves, errors, slash command usage) are sent to [SlowStats](https://theslow.net). This includes:
 
-- User's profile picture for a friendly touch.
-- Username to make them feel acknowledged.
-- Server name to let them know they're in the right place.
-- Unique background from a selection you can customize/
+- `send_metrics.py` → total server/member counts on ready
+- `send_event.py` → embedded webhook support for Discord logs and events
 
-**Customizing welcome images:**
+---
 
-Replace existing background images with your preferred ones in the "res/welcomeMessages/" folder.
-Update the code with new filenames and adjust the available backgrounds for seamless integration.
+## 🎨 Welcome Image Generation
 
-### Fun:
+Welcome images are rendered using `easy-pil` and support avatar centering, custom background rotation, and dynamic font fallback. Assets are pulled from `res/welcomeMessages/`.
 
-#### Meme
+If the image generator fails to load fonts or backgrounds, the feature will automatically disable without crashing the bot.
 
-Sends a popular meme from Reddit.  
+---
 
-Makes an [API](https://meme-api.com/) request, and sends the image url back to the user.  
+## 📜 Logging
 
-/meme
+All logs are written to `logs/discord_bot.log` and formatted with timestamps and module info. Server-specific logs (e.g., message edits, deletions, joins, voice updates) are optionally sent to a channel defined via `LOG_CHANNEL_ID`.
 
+---
 
-#### Cocktails
+## 🧩 Extending the Bot
 
-Recommends a random cocktail to the user. Provides ingredients, photos, and instructions on how to make the drink.  
-Makes an [API](https://thecocktaildb.com) request. Formats the information received as a discord embed, and sends the embed back to the user.
+To add a new command:
+1. Create a new Cog in `cogs/`
+2. Register a slash command with `@app_commands.command`
+3. Use `send_event()` optionally to track analytics
+4. Add business logic in `services/` if external API usage is needed
+5. Import and load your cog via `bot.py`'s dynamic loader
 
-/cocktails 
+---
 
-#### Weather
+## 🛡️ Error Handling Philosophy
 
+- All API responses are validated for content-type and required fields
+- Safe fallbacks and inline logs are provided for bad data
+- Discord error codes (e.g., 401, 404) return user-friendly messages
+- Unhandled exceptions in cogs/services are logged with `exc_info=True`
 
-Displays the current temperature of the requested city to the user. Provides daily high, daily low, current temperature, and the flag of the country.  
-Makes an [API](https://openweathermap.org) request for weather, and another API(https://flagsapi.com) request for the flag of the region. Formats the information received as a discord embed, and sends the embed back to the user.
+---
 
-/weather [CITY] 
+## 📄 License
 
-#### 8Ball
+MIT License – free to use, modify, and deploy. Just don’t be a weirdo and resell it without changing anything.
 
+---
 
-Guides the user on how to make the right choices in life.  
-Makes an [API](https://eightballapi.com) request for guidance on the topic. Sends the response back to the user as a plain text message.
+## 💬 Final Notes
 
-/eightBall [TOPIC] 
+- Requires Python 3.10+
+- Built for long-term maintainability
+- Fully async/await compliant
+- Feel free to fork and adapt for your own community
 
-#### Bored
+---
 
-Gives the user a recommended activity to cure their boredom.  
-Makes an [API](https://www.boredapi.com) request for an activity. Sends the response back to the user as a plain text message.
-
-/bored
-
-#### Joke
-
-Gives the user a joke.  
-Makes an [API](https://v2.jokeapi.dev/) request for a joke. Sends the response back to the user as a plain text message. Please note, that these jokes may be hard-coded to be dark depending on the version you are using. This can be fixed by modifying the API request link.
-
-/joke  
-
-#### QOTD
-
-Gives the user the quote of the day (QOTD).
-
-Makes an [API](https://zenquotes.io/api/today) request for the QOTD. Sends the response back to the user as a plain text message. Please note, that the quotes change every day at 00:00UTC.
-
-/qotd
-
-### Logging:
-
-Commander features logging capabilities that will send a message to a specified logging channel. This channel can be edited through the CONFIG.txt file. To change the channel, copy the ID of the channel and place it in the config file.
-
-#### Messages
-
-Sends an embed when a user **edits** a message. Commander shows the message before, after, author, author profile picture, author ID, and date.  
-
-Furthermore, Commander sends a similar embed when a user **deletes** a message, which includes the deleted message, author, author profile picture, author ID, date, and message ID. 
-
-#### Voice Channel Update
-
-Sends an embed when a user **changes** voice channels. Commander shows the previous channel, current voice channel, user, user profile picture, user ID, and date.  
-
-Sends an embed when a user **joins** a voice channel. Commander shows the current voice channel, user, user profile picture, user ID, and date.  
-
-Sends an embed when a user **leaves** a voice channel. Commander shows the previous channel, user, user profile picture, user ID, and date.  
-
-#### User Updates
-
-Sends an embed when a user **changes** their name. Commander shows the previous name, current voice name, user profile picture, user ID, and date.
-
-Sends an embed when a user **changes** their global name. Commander shows the previous global name, current global name, user profile picture, user ID, and date.  
-
-Sends an embed when a user **changes** their profile picture. Commander shows the new profile picture, user name, user ID, and date.  
-
-
-## Technical Details:
-
-### Languages Used: 
-Python
-
-### Libraries Used:
-discord.py  
-Requests  
-easy_pil  
-PyNaCl  
-youtube-dl (Dedicated host only)  
-ffmpeg (Dedicated host only)  
-
-### APIs:
-[Cocktails](https://thecocktaildb.com)  
-[Weather](https://openweathermap.org)  
-[Flags](https://flagsapi.com)  
-[8Ball](https://eightballapi.com)  
-[Memes](https://meme-api.com/)  
-[Bored](https://www.boredapi.com)  
-[Jokes](https://v2.jokeapi.dev/)  
+**Made with caffeine, memes, and emotional damage.**
