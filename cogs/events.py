@@ -269,7 +269,7 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
 
         send_event(
             event_type="user_joined_commander_server",
-            description="A user just joined a commander server.",
+            description="A user just joined the Commander userbase.",
             payload={
                 "user_id": str(member.id),  # safe to log internally
                 "username": member.name,
@@ -277,7 +277,7 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
                 "member_displayname": str(member.display_name),
             },
             color=0x8c00ff,
-            webhook_title="A user joined a Commander server",
+            webhook_title="A user just joined the Commander userbase.",
             webhook_description= "Look at that, the commander user base is growing. 🌱"
         )
 
@@ -379,7 +379,7 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
         
         send_event(
             event_type="user_left_commander_server",
-            description="A user just left a commander server.",
+            description="A user just left the Commander userbase.",
             payload={
                 "user_id": str(member.id),  # safe to log internally
                 "username": member.name,
@@ -387,7 +387,7 @@ class ServerEventsCog(commands.Cog, name="Server Logging"):
                 "member_displayname": str(member.display_name),
             },
             color=0x8c00ff,
-            webhook_title="A user left a Commander server",
+            webhook_title="A user just left the Commander userbase.",
             webhook_description= "Look at that, the commander user base is... dying 🥀"
         )
 
